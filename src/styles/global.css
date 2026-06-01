@@ -1,3 +1,8 @@
+:root {
+  --font-headings: 'Chillax', sans-serif;
+  --font-body: 'Nata Sans', sans-serif;
+}
+
 @font-face {
   font-family: 'Chillax';
   src: url('./assets/fonts/Chillax-Regular.otf') format('opentype');
