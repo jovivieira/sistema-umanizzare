@@ -197,7 +197,10 @@ export function UsersManagement() {
             type="text"
             placeholder="Buscar usuário por nome ou e-mail..."
             value={searchTerm}
-            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            onChange={e => { 
+              setSearchTerm(e.target.value); 
+              setCurrentPage(1); 
+            }}
             className={styles.searchInput}
           />
         </div>
