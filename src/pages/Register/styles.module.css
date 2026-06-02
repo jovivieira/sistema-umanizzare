@@ -1,139 +1,215 @@
-.container {
-  height: 100vh;
-  width: 100vw;
+/* WRAPPER GERAL */
+.pageWrapper {
   font-family: var(--font-headings);
+  min-height: 100vh;
 }
 
-/* LADO ESQUERDO - VINHO */
+/* SIDEBAR ESQUERDA */
 .sidebar {
-  flex: 1;
-  background-color: #800020; /* Vinho Umanizzare */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background-color: #800020;
   color: white;
   padding: 40px;
+  min-height: 35vh;
 }
 
-.logoArea {
-  text-align: center;
+@media (min-width: 992px) {
+  .sidebar {
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
 }
 
 .logoArea img {
-  width: 150px; /* Logo maior como na imagem */
-  margin-bottom: 20px;
+  max-width: 140px;
 }
 
 .logoArea h1 {
-  font-size: 5.5rem;
+  font-size: clamp(2.5rem, 5vw, 5rem);
   font-weight: 300;
   letter-spacing: 4px;
   text-transform: uppercase;
 }
 
-.logoArea h3{
-  display: block;
+.logoArea h3 {
+ display: block;
   font-size: 1.5em;
   letter-spacing: 20px;
-  color: #E09A3E; /* Bronze do Instituto */
+  color: #E09A3E;
   margin-top: 0px;
   margin-bottom: 40px;
 }
-
 .sidebar h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 400;
 }
 
-/* LADO DIREITO - CREME */
+/* SEÇÃO FORMULÁRIO */
 .formSection {
-  flex: 1.2;
-  background-color: #f3eee8; /* Fundo creme da imagem */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
+  background-color: #f3eee8;
+  padding: 40px 20px;
+  overflow-y: auto;
 }
 
+/* CARD */
 .loginCard {
-  background-color: #fdfaf9; /* Branco levemente quente */
+  background-color: #fdfaf9;
   width: 100%;
-  max-width: 500px;
-  padding: 60px 50px;
-  border-radius: 40px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  padding: 40px 36px;
+  border-radius: 28px;
+  box-shadow: 0 12px 32px rgba(74, 0, 16, 0.09);
 }
 
+/* HEADER */
 .header h3 {
-  color: #000;
-  font-size: 2.2rem;
-  margin-bottom: 5px;
+  color: #800020;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .header p {
-  color: #333;
-  font-size: 1rem;
-  margin-bottom: 40px;
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 0;
 }
 
+/* ERRO */
+.errorMessage {
+  display: block;
+  background-color: #fdecea;
+  border: 1px solid #e74c3c;
+  color: #c0392b;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+  text-align: left;
+}
+
+/* INPUTS */
 .inputGroup {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
 }
 
 .inputGroup label {
   display: block;
-  color: #000;
-  margin-bottom: 8px;
+  color: #4a0010;
+  margin-bottom: 6px;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
-.inputGroup input {
-  width: 100%;
-  padding: 15px;
-  border: 1px solid #ccc;
+/* Sobrescreve Bootstrap form-control para manter identidade visual */
+.inputGroup :global(.form-control),
+.inputGroup :global(.form-select) {
+  padding: 12px 15px;
+  border: 1.5px solid #ddd;
   border-radius: 12px;
-  background-color: #f9f9f9;
+  background-color: #f9f4f0;
+  font-size: 0.95rem;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inputGroup :global(.form-control:focus),
+.inputGroup :global(.form-select:focus) {
+  border-color: #800020;
+  box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1);
+  background-color: #fff;
   outline: none;
 }
 
-.forgotPassword {
-  display: block;
-  text-align: right;
-  color: #E09A3E; /* Cor bronzeada para o link */
-  font-size: 0.85rem;
-  text-decoration: none;
-  margin-top: -10px;
-  margin-bottom: 30px;
-}
-
+/* BOTÃO CONTINUAR / FINALIZAR */
 .btnCadastrar {
-  width: 100%;
   background-color: #800020;
   color: white;
-  padding: 16px;
+  padding: 14px 20px;
   border: none;
-  border-radius: 15px;
-  font-size: 1.2rem;
-  font-weight: 500;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background-color 0.3s, transform 0.1s;
+  letter-spacing: 0.3px;
 }
 
 .btnCadastrar:hover {
   background-color: #600018;
+  transform: translateY(-1px);
 }
 
+.btnCadastrar:active {
+  transform: translateY(0);
+}
+
+/* BOTÃO VOLTAR */
+.backButton {
+  background-color: transparent;
+  color: #800020;
+  border: 2px solid #800020;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.backButton:hover {
+  background-color: #800020;
+  color: white;
+}
+
+/* INDICADOR DE ETAPA */
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.stepDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  transition: background-color 0.3s;
+}
+
+.stepDotActive {
+  background-color: #800020;
+  width: 28px;
+  border-radius: 6px;
+}
+
+/* FOOTER LINK */
 .footerLink {
-  margin-top: 40px;
-  color: #333;
+  color: #666;
   font-size: 0.9rem;
+  margin-bottom: 0;
 }
 
 .footerLink a {
-  color: #c06b3e;
-  font-weight: bold;
+  color: #800020;
+  font-weight: 600;
   text-decoration: none;
+}
+
+.footerLink a:hover {
+  text-decoration: underline;
+}
+
+/* RESPONSIVO */
+@media (max-width: 991px) {
+  .loginCard {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+
+  .header h3 {
+    font-size: 1.5rem;
+  }
 }

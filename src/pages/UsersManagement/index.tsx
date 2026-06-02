@@ -1,227 +1,420 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./styles.module.css";
 import { apiService } from "../../services/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUsers, faUserCheck, faUserXmark, faUserShield,
+  faEye, faPen, faLock, faLockOpen, faTrash,
+  faUserPlus, faMagnifyingGlass, faXmark,
+  faChevronLeft, faChevronRight, faAnglesLeft, faAnglesRight,
+  faFaceFrown,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface User {
   id: string;
   name: string;
   email: string;
   role: "USER" | "ADMIN";
+  cpf?: string;
+  idade?: number;
+  telefone?: string;
+  endereco?: string;
+  estado_civil?: string;
+  genero?: string;
+  funcao_atual?: string;
 }
 
 export function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
+  const [inactiveIds, setInactiveIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-
-  // busca de usuarios
   const [searchTerm, setSearchTerm] = useState("");
-
-  // paginacao
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const userLoggedRole = localStorage.getItem("@Umanizzare:role") || "USER";
-  const isAdm = userLoggedRole === "ADMIN";
+  const [viewUser, setViewUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<"USER" | "ADMIN">("USER");
+  const [editLoading, setEditLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const loggedName = localStorage.getItem("@Umanizzare:name") || "Usuário";
+  const loggedRole = localStorage.getItem("@Umanizzare:role") || "USER";
+  const isAdm = loggedRole === "ADMIN";
 
   useEffect(() => {
     let isMounted = true;
-
     async function loadUsers() {
       try {
         const data = await apiService.getUsers();
-
-        // console.log("Dados recebidos da API (Users):", data);
-
-        if (isMounted) {
-          setUsers(Array.isArray(data) ? data : data.users || []);
-        }
+        if (isMounted) setUsers(Array.isArray(data) ? data : data.users || []);
       } catch (err) {
-        if (isMounted) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Não foi possível conectar ao servidor",
-          );
-        }
+        if (isMounted) setError(err instanceof Error ? err.message : "Erro ao carregar usuários.");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     }
-
     loadUsers();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
-  // TROCAR A ROLE
-  async function handleToggleRole(id: string, currentRole: "USER" | "ADMIN") {
-    if (!isAdm) return;
-    const newRole = currentRole === "USER" ? "ADMIN" : "USER";
-
-    try {
-      await apiService.updateUserRole(id, newRole);
-
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, role: newRole } : user,
-        ),
-      );
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao atualizar.");
-    }
+  function getRoleLabel(role: string) {
+    return role === "ADMIN" ? "Administrador" : "Usuário";
   }
 
-  // DELETAR USUARIO
+  function getInitials(name: string) {
+    return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+  }
+
+  function toggleInactive(id: string) {
+    setInactiveIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
   async function handleDelete(id: string, name: string) {
     if (!isAdm) return;
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja excluir o usuário: ${name}?`,
-    );
-    if (!confirmDelete) return;
-
+    if (!window.confirm(`Excluir o usuário ${name}?`)) return;
     try {
       await apiService.deleteUser(id);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-
-      if (currentUsers.length === 1 && currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-
-      alert("Usuário deletado com sucesso!");
+      setUsers(prev => prev.filter(u => u.id !== id));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao deletar usuário.");
+      alert(err instanceof Error ? err.message : "Erro ao excluir.");
     }
   }
 
-  // LOGICA DE BUSCA
-  const filteredUsers = users.filter((user) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      user.name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
-    );
+  function openEdit(user: User) {
+    setEditUser(user);
+    setEditName(user.name);
+    setEditEmail(user.email);
+    setEditRole(user.role);
+  }
+
+  async function handleSaveEdit() {
+    if (!editUser) return;
+    setEditLoading(true);
+    try {
+      await (apiService as any).updateUser(editUser.id, {
+        name: editName,
+        email: editEmail,
+        role: editRole,
+      });
+      setUsers(prev => prev.map(u =>
+        u.id === editUser.id ? { ...u, name: editName, email: editEmail, role: editRole } : u
+      ));
+      setEditUser(null);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar.");
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
+  const filteredUsers = users.filter(u => {
+    const s = searchTerm.toLowerCase();
+    return u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s);
   });
 
-  // LOGICA DE PAGINACAO
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const totalAdmins = users.filter(u => u.role === "ADMIN").length;
+  const totalAtivos = users.filter(u => !inactiveIds.has(u.id)).length;
+  const totalInativos = users.filter(u => inactiveIds.has(u.id)).length;
 
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const indexOfFirst = (currentPage - 1) * itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirst, indexOfFirst + itemsPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
-    setSearchTerm(e.target.value);
-    // retornar pra pagina um quando bsucar usuario
-    setCurrentPage(1);
-  }
-
-  // se estiver demorando para carregar
   if (loading) {
-    return <div className={styles.loading}>Carregando usuários...</div>;
+    return (
+      <div className={styles.loadingWrapper}>
+        <div className={styles.spinner}></div>
+        <p>Carregando usuários...</p>
+      </div>
+    );
   }
+
+  const stats = [
+    { icon: faUsers, label: "Total de usuários", value: users.length, desc: "Usuários cadastrados", color: "#fdecea", iconColor: "#800020" },
+    { icon: faUserCheck, label: "Usuários ativos", value: totalAtivos, desc: `${users.length > 0 ? Math.round((totalAtivos / users.length) * 100) : 0}% do total`, color: "#e8f5e9", iconColor: "#2e7d32" },
+    { icon: faUserXmark, label: "Usuários inativos", value: totalInativos, desc: `${users.length > 0 ? Math.round((totalInativos / users.length) * 100) : 0}% do total`, color: "#fff3e0", iconColor: "#e65100" },
+    { icon: faUserShield, label: "Administradores", value: totalAdmins, desc: `${users.length > 0 ? Math.round((totalAdmins / users.length) * 100) : 0}% do total`, color: "#f3e5f5", iconColor: "#6a1b9a" },
+  ];
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Gerenciamento de Usuários</h1>
-      {error && <p className={styles.errorMessage}>{error}</p>}
+    <div className={styles.page}>
 
-      <div className={styles.searchContainer}>
-        <input
-          type="text"
-          placeholder="Buscar nome ou email..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className={styles.searchInput}
-        />
+      {/* TOPBAR */}
+      <div className={styles.topBar}>
+        <div>
+          <h1 className={styles.title}>Gerenciamento de Usuários</h1>
+          <p className={styles.subtitle}>Visualize e gerencie todos os usuários do sistema.</p>
+        </div>
+        <div className={styles.topBarRight}>
+          {isAdm && (
+            <button className={styles.btnNew} onClick={() => navigate("/register")}>
+              <FontAwesomeIcon icon={faUserPlus} style={{ marginRight: 8 }} />
+              Novo usuário
+            </button>
+          )}
+          <div className={styles.userBadge}>
+            <div className={styles.userBadgeAvatar}>{getInitials(loggedName)}</div>
+            <div>
+              <p className={styles.userBadgeName}>{loggedName}</p>
+              <p className={styles.userBadgeRole}>{getRoleLabel(loggedRole)}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>E-mail</th>
-            <th>Nível</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
+      {error && <div className={styles.errorMessage}>{error}</div>}
 
-        <tbody>
-          {currentUsers.length > 0 ? (
-            currentUsers.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
+      {/* STATS */}
+      <div className={styles.statsGrid}>
+        {stats.map(s => (
+          <div key={s.label} className={styles.statCard}>
+            <div className={styles.statIcon} style={{ backgroundColor: s.color }}>
+              <FontAwesomeIcon icon={s.icon} style={{ color: s.iconColor, fontSize: "1.3rem" }} />
+            </div>
+            <div>
+              <p className={styles.statLabel}>{s.label}</p>
+              <h3 className={styles.statNumber}>{s.value}</h3>
+              <p className={styles.statDesc}>{s.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* TOOLBAR */}
+      <div className={styles.toolbar}>
+        <div className={styles.searchWrapper}>
+          <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Buscar usuário por nome ou e-mail..."
+            value={searchTerm}
+            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            className={styles.searchInput}
+          />
+        </div>
+        {searchTerm && (
+          <button className={styles.clearBtn} onClick={() => { setSearchTerm(""); setCurrentPage(1); }}>
+            <FontAwesomeIcon icon={faXmark} style={{ marginRight: 6 }} />
+            Limpar filtros
+          </button>
+        )}
+      </div>
+
+      {/* TABELA desktop */}
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>E-mail</th>
+              <th>Nível</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentUsers.length > 0 ? currentUsers.map(user => (
+              <tr key={user.id} className={inactiveIds.has(user.id) ? styles.rowInactive : ""}>
                 <td>
-                  <span
-                    className={
-                      user.role === "ADMIN" ? styles.badgeAdm : styles.badgeUser
-                    }
-                  >
-                    {user.role}
+                  <div className={styles.userInfo}>
+                    <div className={styles.avatar}>{getInitials(user.name)}</div>
+                    <div>
+                      <p className={styles.userName}>{user.name}</p>
+                      <p className={styles.userEmail}>{user.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className={styles.emailCell}>{user.email}</td>
+                <td>
+                  <span className={user.role === "ADMIN" ? styles.badgeAdm : styles.badgeUser}>
+                    {getRoleLabel(user.role)}
+                  </span>
+                </td>
+                <td>
+                  <span className={inactiveIds.has(user.id) ? styles.badgeInativo : styles.badgeAtivo}>
+                    {inactiveIds.has(user.id) ? "Inativo" : "Ativo"}
                   </span>
                 </td>
                 <td>
                   <div className={styles.actions}>
-                    <button
-                      onClick={() => handleToggleRole(user.id, user.role)}
-                      className={styles.buttonToggle}
-                      disabled={!isAdm}
-                    >
-                      {user.role === "USER" ? "Tornar ADMIN" : "Tornar USER"}
+                    <button className={styles.actionBtn} title="Visualizar" onClick={() => setViewUser(user)}>
+                      <FontAwesomeIcon icon={faEye} />
                     </button>
-
-                    <button
-                      onClick={() => handleDelete(user.id, user.name)}
-                      className={styles.buttonDelete}
-                      disabled={!isAdm}
-                    >
-                      Excluir
-                    </button>
+                    {isAdm && <>
+                      <button className={styles.actionBtn} title="Editar" onClick={() => openEdit(user)}>
+                        <FontAwesomeIcon icon={faPen} />
+                      </button>
+                      <button className={styles.actionBtn} title={inactiveIds.has(user.id) ? "Ativar" : "Inativar"} onClick={() => toggleInactive(user.id)}>
+                        <FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} />
+                      </button>
+                      <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Excluir" onClick={() => handleDelete(user.id, user.name)}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </>}
                   </div>
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={4} style={{ textAlign: "center", padding: "20px" }}>
-                Nenhum usuário encontrado na busca.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )) : (
+              <tr><td colSpan={5}>
+                <div className={styles.emptyState}>
+                  <FontAwesomeIcon icon={faFaceFrown} style={{ fontSize: "2rem", marginBottom: 8 }} />
+                  <p>Nenhum usuário encontrado.</p>
+                </div>
+              </td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {totalPages > 1 && (
+      {/* CARDS mobile */}
+      <div className={styles.cardList}>
+        {currentUsers.map(user => (
+          <div key={user.id} className={`${styles.card} ${inactiveIds.has(user.id) ? styles.cardInactive : ""}`}>
+            <div className={styles.cardHeader}>
+              <div className={styles.avatar}>{getInitials(user.name)}</div>
+              <div className={styles.cardInfo}>
+                <p className={styles.userName}>{user.name}</p>
+                <p className={styles.userEmail}>{user.email}</p>
+              </div>
+              <span className={user.role === "ADMIN" ? styles.badgeAdm : styles.badgeUser}>
+                {getRoleLabel(user.role)}
+              </span>
+            </div>
+            <div className={styles.cardActions}>
+              <button className={styles.actionBtn} onClick={() => setViewUser(user)}>
+                <FontAwesomeIcon icon={faEye} />
+              </button>
+              {isAdm && <>
+                <button className={styles.actionBtn} onClick={() => openEdit(user)}>
+                  <FontAwesomeIcon icon={faPen} />
+                </button>
+                <button className={styles.actionBtn} onClick={() => toggleInactive(user.id)}>
+                  <FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} />
+                </button>
+                <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} onClick={() => handleDelete(user.id, user.name)}>
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* PAGINAÇÃO */}
+      <div className={styles.paginationBar}>
+        <p className={styles.paginationInfo}>
+          Mostrando {filteredUsers.length === 0 ? 0 : indexOfFirst + 1} a {Math.min(indexOfFirst + itemsPerPage, filteredUsers.length)} de {filteredUsers.length} usuários
+        </p>
         <div className={styles.pagination}>
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={styles.pageButton}
-          >
-            Anterior
+          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className={styles.pageBtn}>
+            <FontAwesomeIcon icon={faAnglesLeft} />
           </button>
-
-          <span className={styles.pageInfo}>
-            Página {currentPage} de {totalPages}
-          </span>
-
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={styles.pageButton}
-          >
-            Próxima
+          <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className={styles.pageBtn}>
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </button>
+          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
+            <button key={p} onClick={() => setCurrentPage(p)} className={`${styles.pageBtn} ${currentPage === p ? styles.pageBtnActive : ""}`}>{p}</button>
+          ))}
+          <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className={styles.pageBtn}>
+            <FontAwesomeIcon icon={faChevronRight} />
+          </button>
+          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className={styles.pageBtn}>
+            <FontAwesomeIcon icon={faAnglesRight} />
           </button>
         </div>
+        <div className={styles.itemsPerPage}>
+          <span>Itens por página:</span>
+          <select value={itemsPerPage} onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className={styles.itemsSelect}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+      </div>
+
+      {/* MODAL VISUALIZAR */}
+      {viewUser && (
+        <div className={styles.modalOverlay} onClick={() => setViewUser(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Detalhes do Usuário</h3>
+              <button onClick={() => setViewUser(null)} className={styles.modalClose}>
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalAvatar}>{getInitials(viewUser.name)}</div>
+              <div className={styles.modalGrid}>
+                {[
+                  { label: "Nome", value: viewUser.name },
+                  { label: "E-mail", value: viewUser.email },
+                  { label: "Nível", value: getRoleLabel(viewUser.role) },
+                  { label: "Status", value: inactiveIds.has(viewUser.id) ? "Inativo" : "Ativo" },
+                  { label: "CPF", value: viewUser.cpf || "—" },
+                  { label: "Idade", value: viewUser.idade ? `${viewUser.idade} anos` : "—" },
+                  { label: "Telefone", value: viewUser.telefone || "—" },
+                  { label: "Endereço", value: viewUser.endereco || "—" },
+                  { label: "Estado Civil", value: viewUser.estado_civil || "—" },
+                  { label: "Gênero", value: viewUser.genero || "—" },
+                  { label: "Função Atual", value: viewUser.funcao_atual || "—" },
+                ].map(item => (
+                  <div key={item.label} className={styles.modalField}>
+                    <span className={styles.modalFieldLabel}>{item.label}</span>
+                    <span className={styles.modalFieldValue}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* MODAL EDITAR */}
+      {editUser && (
+        <div className={styles.modalOverlay} onClick={() => setEditUser(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Editar Usuário</h3>
+              <button onClick={() => setEditUser(null)} className={styles.modalClose}>
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.editField}>
+                <label>Nome</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)} className={styles.editInput} />
+              </div>
+              <div className={styles.editField}>
+                <label>E-mail</label>
+                <input value={editEmail} onChange={e => setEditEmail(e.target.value)} className={styles.editInput} type="email" />
+              </div>
+              <div className={styles.editField}>
+                <label>Nível</label>
+                <select value={editRole} onChange={e => setEditRole(e.target.value as "USER" | "ADMIN")} className={styles.editInput}>
+                  <option value="USER">Usuário</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </div>
+              <div className={styles.modalFooter}>
+                <button onClick={() => setEditUser(null)} className={styles.btnCancel}>Cancelar</button>
+                <button onClick={handleSaveEdit} disabled={editLoading} className={styles.btnSave}>
+                  {editLoading ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

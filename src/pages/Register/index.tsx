@@ -50,12 +50,21 @@ export function Register() {
     setStep(2);
   }
 
+
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 11);
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     setCpf(value);
+  };
+
+  // ✅ FORA do handleRegister
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 11);
+    value = value.replace(/(\d{2})(\d)/, "($1) $2");
+    value = value.replace(/(\d{5})(\d)/, "$1-$2");
+    setTelefone(value);
   };
 
   async function handleRegister(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -124,7 +133,7 @@ export function Register() {
 
         {/* SEÇÃO FORMULÁRIO DIREITA */}
         <div className={`col-12 col-lg-7 d-flex align-items-start align-items-lg-center justify-content-center py-5 ${styles.formSection}`}>
-          <div className={`w-100 px-3 px-md-5`} style={{ maxWidth: "560px" }}>
+          <div className="w-100 px-3 px-md-5" style={{ maxWidth: "560px" }}>
             <div className={styles.loginCard}>
 
               <div className={`${styles.header} text-center mb-4`}>
@@ -141,59 +150,24 @@ export function Register() {
                   <>
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>Nome Completo</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Digite seu nome completo"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
+                      <input type="text" className="form-control" placeholder="Digite seu nome completo" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
-
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>E-mail</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        placeholder="Digite seu melhor e-mail"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
+                      <input type="email" className="form-control" placeholder="Digite seu melhor e-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
-
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>Confirmar E-mail</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        placeholder="Repita seu e-mail"
-                        value={confirmEmail}
-                        onChange={(e) => setConfirmEmail(e.target.value)}
-                      />
+                      <input type="email" className="form-control" placeholder="Repita seu e-mail" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} />
                     </div>
-
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>Senha</label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="Crie uma senha forte"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
+                      <input type="password" className="form-control" placeholder="Crie uma senha forte" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
-
                     <div className={`${styles.inputGroup} mb-4`}>
                       <label>Confirmar Senha</label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="Repita a senha criada"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
+                      <input type="password" className="form-control" placeholder="Repita a senha criada" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                     </div>
-
                     <button type="button" onClick={handleNextStep} className={`${styles.btnCadastrar} w-100`}>
                       Continuar para o Questionário
                     </button>
@@ -204,220 +178,155 @@ export function Register() {
                 {step === 2 && (
                   <>
                     <div className="row g-3">
-
                       <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Data de Acolhimento</label>
-                          <input
-                            type="date"
-                            className="form-control"
-                            value={dataAcolhimento}
-                            onChange={(e) => setDataAcolhimento(e.target.value)}
-                          />
+                          <input type="date" className="form-control" value={dataAcolhimento} onChange={(e) => setDataAcolhimento(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Horário</label>
-                          <input
-                            type="time"
-                            className="form-control"
-                            value={horario}
-                            onChange={(e) => setHorario(e.target.value)}
-                          />
+                          <input type="time" className="form-control" value={horario} onChange={(e) => setHorario(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Equipe de Atendimento</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Equipe de Atendimento"
-                            value={equipeAtendimento}
-                            onChange={(e) => setEquipeAtendimento(e.target.value)}
-                          />
+                          <input type="text" className="form-control" placeholder="Equipe de Atendimento" value={equipeAtendimento} onChange={(e) => setEquipeAtendimento(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-12 col-sm-8">
                         <div className={styles.inputGroup}>
                           <label>CPF</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="000.000.000-00"
-                            value={cpf}
-                            onChange={handleCpfChange}
-                            maxLength={14}
-                          />
+                          <input type="text" className="form-control" placeholder="000.000.000-00" value={cpf} onChange={handleCpfChange} maxLength={14} />
                         </div>
                       </div>
 
                       <div className="col-12 col-sm-4">
                         <div className={styles.inputGroup}>
                           <label>Idade</label>
-                          <input
-                            type="number"
-                            className="form-control"
-                            placeholder="Idade"
-                            value={idade}
-                            onChange={(e) => setIdade(e.target.value)}
-                            min="0"
-                            max="150"
-                          />
+                          <input type="number" className="form-control" placeholder="Idade" value={idade} onChange={(e) => setIdade(e.target.value)} min="0" max="150" />
                         </div>
                       </div>
 
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Telefone</label>
-                          <input
-                            type="tel"
-                            className="form-control"
-                            placeholder="Telefone"
-                            value={telefone}
-                            onChange={(e) => setTelefone(e.target.value)}
-                          />
+                          <input type="tel" className="form-control" placeholder="(00) 00000-0000" value={telefone} onChange={handleTelefoneChange} maxLength={15} />
                         </div>
                       </div>
 
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Endereço Residencial Completo</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Endereço Residencial Completo"
-                            value={endereco}
-                            onChange={(e) => setEndereco(e.target.value)}
-                          />
+                          <input type="text" className="form-control" placeholder="Endereço Residencial Completo" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Órgão responsável pelo encaminhamento</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Órgão responsável pelo encaminhamento"
-                            value={orgaoEncaminhamento}
-                            onChange={(e) => setOrgaoEncaminhamento(e.target.value)}
-                          />
+                          <input type="text" className="form-control" placeholder="Órgão responsável pelo encaminhamento" value={orgaoEncaminhamento} onChange={(e) => setOrgaoEncaminhamento(e.target.value)} />
                         </div>
                       </div>
 
-                      <div className="col-12">
+                         <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Estado Civil</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Estado Civil"
-                            value={estadoCivil}
-                            onChange={(e) => setEstadoCivil(e.target.value)}
-                          />
+                          <select className="form-select" value={estadoCivil} onChange={(e) => setEstadoCivil(e.target.value)}>
+                            <option value="">Selecione...</option>
+                            <option value="Solteiro(a)">Solteiro(a)</option>
+                            <option value="Casado(a)">Casado(a)</option>
+                            <option value="Divorciado(a)">Divorciado(a)</option>
+                            <option value="Viúvo(a)">Viúvo(a)</option>
+                          </select>
                         </div>
                       </div>
 
-                      <div className="col-12 col-sm-6">
+                       <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Gênero</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Gênero"
-                            value={genero}
-                            onChange={(e) => setGenero(e.target.value)}
-                          />
+                          <select className="form-select" value={genero} onChange={(e) => setGenero(e.target.value)}>
+                            <option value="">Selecione...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                             <option value="Transgênero">Transgênero</option>
+                            <option value="Outro">Outro</option>
+                          </select>
                         </div>
                       </div>
 
-                      <div className="col-12 col-sm-6">
+                     <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Orientação Sexual</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Orientação Sexual"
-                            value={orientacaoSexual}
-                            onChange={(e) => setOrientacaoSexual(e.target.value)}
-                          />
+                          <select className="form-select" value={orientacaoSexual} onChange={(e) => setOrientacaoSexual(e.target.value)}>
+                            <option value="">Selecione...</option>
+                            <option value="Heterosexual">Heterosexual</option>
+                            <option value="Homosexual">Homosexual</option>
+                            <option value="Bisexual">Bisexual</option>
+                            <option value="Outro">Outro</option>
+                          </select>
                         </div>
                       </div>
 
-                      <div className="col-12">
+                        <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Identificação Étnico-Racial</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Identificação Étnico-Racial"
-                            value={identificacaoEtnicoRacial}
-                            onChange={(e) => setIdentificacaoEtnicoRacial(e.target.value)}
-                          />
+                          <select className="form-select" value={identificacaoEtnicoRacial} onChange={(e) => setIdentificacaoEtnicoRacial(e.target.value)}>
+                            <option value="">Selecione...</option>
+                            <option value="Branca">Branca</option>
+                            <option value="Preta">Preta</option>
+                            <option value="Parda">Parda</option>
+                            <option value="Amarela">Amarela</option>
+                            <option value="Indígena">Indígena</option>
+                          </select>
                         </div>
                       </div>
-
+                           
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Grau de Escolaridade</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Grau de Escolaridade"
-                            value={grauEscolaridade}
-                            onChange={(e) => setGrauEscolaridade(e.target.value)}
-                          />
+                          <select className="form-select" value={grauEscolaridade} onChange={(e) => setGrauEscolaridade(e.target.value)}>
+                            <option value="">Selecione...</option>
+                            <option value="Ensino Fundamental completo">Ensino Fundamental completo</option>
+                            <option value="Ensino Fundamental incompleto">Ensino Fundamental incompleto</option>
+                            <option value="Ensino Médio completo">Ensino Médio completo</option>
+                            <option value="Ensino Médio incompleto">Ensino Médio incompleto</option>
+                            <option value="Ensino Superior completo">Ensino Superior completo</option>
+                            <option value="Ensino Superior incompleto">Ensino Superior incompleto</option>
+                          </select>
                         </div>
                       </div>
+                          
 
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Função/Trabalho Atual</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Função/Trabalho Atual"
-                            value={funcaoAtual}
-                            onChange={(e) => setFuncaoAtual(e.target.value)}
-                          />
+                          <input type="text" className="form-control" placeholder="Função/Trabalho Atual" value={funcaoAtual} onChange={(e) => setFuncaoAtual(e.target.value)} />
                         </div>
                       </div>
-
+                      
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Interesse nas oficinas do instituto?</label>
-                          <select
-                            className="form-select"
-                            value={interesseOficinas}
-                            onChange={(e) => setInteresseOficinas(e.target.value)}
-                          >
+                          <select className="form-select" value={interesseOficinas} onChange={(e) => setInteresseOficinas(e.target.value)}>
                             <option value="">Selecione...</option>
                             <option value="Sim">Sim, tenho interesse</option>
                             <option value="Não">Não possuo interesse</option>
                           </select>
                         </div>
                       </div>
-
-                    </div>{/* fim row */}
+                    </div>
 
                     <div className="d-flex gap-3 mt-4">
-                      <button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className={`${styles.backButton} flex-fill`}
-                      >
+                      <button type="button" onClick={() => setStep(1)} className={`${styles.backButton} flex-fill`}>
                         Voltar
                       </button>
-                      <button
-                        type="submit"
-                        className={`${styles.btnCadastrar} flex-fill`}
-                        style={{ flex: 2 }}
-                      >
+                      <button type="submit" className={`${styles.btnCadastrar} flex-fill`} style={{ flex: 2 }}>
                         Finalizar Cadastro
                       </button>
                     </div>

@@ -3,19 +3,17 @@ const BASE_URL = "http://147.93.9.44:8002";
 function getHeaders(contentTypeJson = true) {
   const token = localStorage.getItem("@Umanizzare:token");
   const headers: Record<string, string> = {};
-
   if (contentTypeJson) {
     headers["Content-Type"] = "application/json";
   }
-
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-
   return headers;
 }
 
 export const apiService = {
+
   // LOGIN
   async login(body: object) {
     const response = await fetch(`${BASE_URL}/auth/login`, {
@@ -23,11 +21,8 @@ export const apiService = {
       headers: getHeaders(true),
       body: JSON.stringify(body),
     });
-
     const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "E-mail ou senha incorretos.");
-    }
+    if (!response.ok) throw new Error(data.message || "E-mail ou senha incorretos.");
     return data;
   },
 
@@ -38,11 +33,8 @@ export const apiService = {
       headers: getHeaders(true),
       body: JSON.stringify(body),
     });
-
     const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erro ao realizar o cadastro mestre.");
-    }
+    if (!response.ok) throw new Error(data.message || "Erro ao realizar o cadastro mestre.");
     return data;
   },
 
@@ -52,11 +44,19 @@ export const apiService = {
       method: "GET",
       headers: getHeaders(true),
     });
-
     const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Erro ao carregar usuários.");
-    }
+    if (!response.ok) throw new Error(data.message || "Erro ao carregar usuários.");
+    return data;
+  },
+
+  // BUSCAR USUARIO POR ID
+  async getUserById(id: string) {
+    const response = await fetch(`${BASE_URL}/users/${id}`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao buscar usuário.");
     return data;
   },
 
@@ -67,12 +67,23 @@ export const apiService = {
       headers: getHeaders(true),
       body: JSON.stringify({ role }),
     });
-
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Erro ao atualizar permissão.");
     }
     return true;
+  },
+
+  // ATUALIZAR USUARIO
+  async updateUser(id: string, body: object) {
+    const response = await fetch(`${BASE_URL}/users/${id}`, {
+      method: "PATCH",
+      headers: getHeaders(true),
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao atualizar usuário.");
+    return data;
   },
 
   // DELETAR USUARIO
@@ -87,4 +98,5 @@ export const apiService = {
     }
     return true;
   },
+
 };
