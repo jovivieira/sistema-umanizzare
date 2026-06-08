@@ -4,50 +4,35 @@ import styles from "./styles.module.css";
 import logo from "../../assets/images/brand.png";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { apiService } from "../../services/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
-
     if (!email || !password) {
       setError("Por favor, preencha todos os campos.");
       return;
     }
-
     try {
       const data = await apiService.login({ email, password });
-
       const token = data.accessToken || data.token;
-      if (token) {
-        localStorage.setItem("@Umanizzare:token", token);
-      }
-
+      if (token) localStorage.setItem("@Umanizzare:token", token);
       const role = data.role || data.user?.role;
-      if (role) {
-        localStorage.setItem("@Umanizzare:role", role);
-      }
-
+      if (role) localStorage.setItem("@Umanizzare:role", role);
       const name = data.name || data.nome || data.user?.name || data.user?.nome;
-      if (name) {
-        localStorage.setItem("@Umanizzare:name", name);
-      }
-
-      console.log("Login feito com sucesso!", data);
+      if (name) localStorage.setItem("@Umanizzare:name", name);
       navigate("/");
       window.location.reload();
-
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Não foi possível conectar ao servidor."
-      );
+      setError(err instanceof Error ? err.message : "Não foi possível conectar ao servidor.");
     }
   }
 
@@ -78,7 +63,6 @@ export function Login() {
               {error && <span className={styles.errorMessage}>{error}</span>}
 
               <form onSubmit={handleSubmit}>
-
                 <div className={`${styles.inputGroup} mb-3`}>
                   <label>E-mail</label>
                   <input
@@ -92,13 +76,23 @@ export function Login() {
 
                 <div className={`${styles.inputGroup} mb-2`}>
                   <label>Senha</label>
-                  <input
-                    type="password"
-                    placeholder="Digite sua senha"
-                    className="form-control"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <div className={styles.passwordWrapper}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Digite sua senha"
+                      className={`form-control ${styles.passwordInput}`}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeBtn}
+                      onClick={() => setShowPassword(p => !p)}
+                      tabIndex={-1}
+                    >
+                      <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                    </button>
+                  </div>
                 </div>
 
                 <Link to="/forgot-password" className={styles.forgotPassword}>
@@ -108,7 +102,6 @@ export function Login() {
                 <button type="submit" className={`${styles.btnEntrar} w-100 mt-3`}>
                   Entrar
                 </button>
-
               </form>
 
               <p className={`${styles.footerLink} text-center mt-4`}>
