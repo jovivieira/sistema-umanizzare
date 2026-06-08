@@ -15,7 +15,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "ADMIN" | "PSICOLOGO" | "PACIENTE";
   cpf?: string;
   idade?: number;
   telefone?: string;
@@ -25,21 +25,39 @@ interface User {
   funcao_atual?: string;
 }
 
+// ✅ Carrega inativos do localStorage
+function loadInactiveIds(): Set<string> {
+  try {
+    const saved = localStorage.getItem("@Umanizzare:inactiveUsers");
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+// ✅ Salva inativos no localStorage
+function saveInactiveIds(ids: Set<string>) {
+  localStorage.setItem("@Umanizzare:inactiveUsers", JSON.stringify([...ids]));
+}
+
 export function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
-  const [inactiveIds, setInactiveIds] = useState<Set<string>>(new Set());
+  const [inactiveIds, setInactiveIds] = useState<Set<string>>(loadInactiveIds);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
   const [viewUser, setViewUser] = useState<User | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editRole, setEditRole] = useState<"USER" | "ADMIN">("USER");
+  const [editRole, setEditRole] = useState<User["role"]>("USER");
   const [editLoading, setEditLoading] = useState(false);
+
+  const [loggedPicture, setLoggedPicture] = useState(
+    localStorage.getItem("@Umanizzare:picture") || ""
+  );
 
   const navigate = useNavigate();
   const loggedName = localStorage.getItem("@Umanizzare:name") || "Usuário";
@@ -62,18 +80,42 @@ export function UsersManagement() {
     return () => { isMounted = false; };
   }, []);
 
+  useEffect(() => {
+    function handleUpdate() {
+      setLoggedPicture(localStorage.getItem("@Umanizzare:picture") || "");
+    }
+    window.addEventListener("profileUpdated", handleUpdate);
+    return () => window.removeEventListener("profileUpdated", handleUpdate);
+  }, []);
+
   function getRoleLabel(role: string) {
-    return role === "ADMIN" ? "Administrador" : "Usuário";
+    switch (role) {
+      case "ADMIN": return "Administrador";
+      case "PSICOLOGO": return "Psicólogo";
+      case "PACIENTE": return "Paciente";
+      default: return "Usuário";
+    }
+  }
+
+  function getRoleBadgeClass(role: string) {
+    switch (role) {
+      case "ADMIN": return styles.badgeAdm;
+      case "PSICOLOGO": return styles.badgePsicologo;
+      case "PACIENTE": return styles.badgePaciente;
+      default: return styles.badgeUser;
+    }
   }
 
   function getInitials(name: string) {
     return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
   }
 
+  // ✅ Persiste no localStorage ao togglear
   function toggleInactive(id: string) {
     setInactiveIds(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+      saveInactiveIds(next);
       return next;
     });
   }
@@ -84,6 +126,13 @@ export function UsersManagement() {
     try {
       await apiService.deleteUser(id);
       setUsers(prev => prev.filter(u => u.id !== id));
+      // Remove dos inativos também
+      setInactiveIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        saveInactiveIds(next);
+        return next;
+      });
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erro ao excluir.");
     }
@@ -158,11 +207,15 @@ export function UsersManagement() {
           {isAdm && (
             <button className={styles.btnNew} onClick={() => navigate("/register")}>
               <FontAwesomeIcon icon={faUserPlus} style={{ marginRight: 8 }} />
-              Novo usuário
+              Novo paciente
             </button>
           )}
           <div className={styles.userBadge}>
-            <div className={styles.userBadgeAvatar}>{getInitials(loggedName)}</div>
+            {loggedPicture ? (
+              <img src={loggedPicture} alt={loggedName} className={styles.userBadgeImg} />
+            ) : (
+              <div className={styles.userBadgeAvatar}>{getInitials(loggedName)}</div>
+            )}
             <div>
               <p className={styles.userBadgeName}>{loggedName}</p>
               <p className={styles.userBadgeRole}>{getRoleLabel(loggedRole)}</p>
@@ -238,7 +291,7 @@ export function UsersManagement() {
                 </td>
                 <td className={styles.emailCell}>{user.email}</td>
                 <td>
-                  <span className={user.role === "ADMIN" ? styles.badgeAdm : styles.badgeUser}>
+                  <span className={getRoleBadgeClass(user.role)}>
                     {getRoleLabel(user.role)}
                   </span>
                 </td>
@@ -256,7 +309,11 @@ export function UsersManagement() {
                       <button className={styles.actionBtn} title="Editar" onClick={() => openEdit(user)}>
                         <FontAwesomeIcon icon={faPen} />
                       </button>
-                      <button className={styles.actionBtn} title={inactiveIds.has(user.id) ? "Ativar" : "Inativar"} onClick={() => toggleInactive(user.id)}>
+                      <button
+                        className={styles.actionBtn}
+                        title={inactiveIds.has(user.id) ? "Ativar" : "Inativar"}
+                        onClick={() => toggleInactive(user.id)}
+                      >
                         <FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} />
                       </button>
                       <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Excluir" onClick={() => handleDelete(user.id, user.name)}>
@@ -288,7 +345,7 @@ export function UsersManagement() {
                 <p className={styles.userName}>{user.name}</p>
                 <p className={styles.userEmail}>{user.email}</p>
               </div>
-              <span className={user.role === "ADMIN" ? styles.badgeAdm : styles.badgeUser}>
+              <span className={getRoleBadgeClass(user.role)}>
                 {getRoleLabel(user.role)}
               </span>
             </div>
@@ -402,8 +459,10 @@ export function UsersManagement() {
               </div>
               <div className={styles.editField}>
                 <label>Nível</label>
-                <select value={editRole} onChange={e => setEditRole(e.target.value as "USER" | "ADMIN")} className={styles.editInput}>
+                <select value={editRole} onChange={e => setEditRole(e.target.value as User["role"])} className={styles.editInput}>
                   <option value="USER">Usuário</option>
+                  <option value="PACIENTE">Paciente</option>
+                  <option value="PSICOLOGO">Psicólogo</option>
                   <option value="ADMIN">Administrador</option>
                 </select>
               </div>

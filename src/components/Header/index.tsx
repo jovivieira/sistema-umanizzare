@@ -1,17 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import logo from "../../assets/images/brand.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faHouse,
-  faUserShield,
-  faUsers,
-  faFileAlt,
-  faChartBar,
-  faRightFromBracket,
-  faUser,
-  faRightToBracket,
-  faUserPlus,
+  faHouse, faUserShield, faUsers, faFileAlt, faChartBar,
+  faRightFromBracket, faRightToBracket, faUserPlus, faGear,
 } from '@fortawesome/free-solid-svg-icons';
 
 export function Header() {
@@ -23,10 +17,27 @@ export function Header() {
   const isAdm = userLoggedRole === "ADMIN";
   const isAuthenticated = !!token;
 
+  const [picture, setPicture] = useState(
+    localStorage.getItem("@Umanizzare:picture") || ""
+  );
+
+  useEffect(() => {
+    function handleUpdate() {
+      setPicture(localStorage.getItem("@Umanizzare:picture") || "");
+    }
+    window.addEventListener("profileUpdated", handleUpdate);
+    return () => window.removeEventListener("profileUpdated", handleUpdate);
+  }, []);
+
+  function getInitials(name: string) {
+    return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+  }
+
   function handleLogout() {
     localStorage.removeItem("@Umanizzare:token");
     localStorage.removeItem("@Umanizzare:role");
     localStorage.removeItem("@Umanizzare:name");
+    localStorage.removeItem("@Umanizzare:picture");
     navigate("/login");
     window.location.reload();
   }
@@ -72,11 +83,22 @@ export function Header() {
 
         {isAuthenticated ? (
           <>
-            <span className={`${styles.navLink} ${styles.navUser}`}>
-              <FontAwesomeIcon icon={faUser} className={styles.navIcon} />
-              Olá, {userName}
-            </span>
-            
+            <div className={`${styles.navLink} ${styles.navUser}`}>
+              {picture ? (
+                <img src={picture} alt={userName} className={styles.navAvatar} />
+              ) : (
+                <div className={styles.navAvatarPlaceholder}>
+                  {getInitials(userName)}
+                </div>
+              )}
+              <span>Olá, {userName}</span>
+            </div>
+
+            <Link to="/settings" className={`${styles.navLink} ${isActive("/settings")}`}>
+              <FontAwesomeIcon icon={faGear} className={styles.navIcon} />
+              Configurações
+            </Link>
+
             <button onClick={handleLogout} className={`${styles.navLink} ${styles.navLogout}`}>
               <FontAwesomeIcon icon={faRightFromBracket} className={styles.navIcon} />
               Sair

@@ -39,15 +39,16 @@ export const apiService = {
   },
 
   // LISTAR USUARIOS
-  async getUsers() {
-    const response = await fetch(`${BASE_URL}/users`, {
-      method: "GET",
-      headers: getHeaders(true),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Erro ao carregar usuários.");
-    return data;
-  },
+ // LISTAR USUARIOS
+async getUsers() {
+  const response = await fetch(`${BASE_URL}/users?limit=9999`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao carregar usuários.");
+  return data;
+},
 
   // BUSCAR USUARIO POR ID
   async getUserById(id: string) {
@@ -99,4 +100,56 @@ export const apiService = {
     return true;
   },
 
+
+
+// BUSCAR PERFIL
+async getProfile() {
+  const response = await fetch(`${BASE_URL}/profile`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao buscar perfil.");
+  return data;
+},
+
+// ATUALIZAR PERFIL
+async updateProfile(body: object) {
+  const response = await fetch(`${BASE_URL}/profile`, {
+    method: "PATCH",
+    headers: getHeaders(true),
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao atualizar perfil.");
+  return data;
+},
+
+// UPLOAD FOTO
+async uploadProfilePicture(file: File) {
+  const token = localStorage.getItem("@Umanizzare:token");
+  const formData = new FormData();
+  formData.append("image", file);
+  const response = await fetch(`${BASE_URL}/profile/picture`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao enviar foto.");
+  return data;
+},
+
+// DELETAR FOTO
+async deleteProfilePicture() {
+  const response = await fetch(`${BASE_URL}/profile/picture`, {
+    method: "DELETE",
+    headers: getHeaders(false),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Erro ao deletar foto.");
+  }
+  return true;
+},
 };

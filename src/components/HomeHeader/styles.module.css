@@ -1,0 +1,70 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  background: #800020;
+  border-bottom: 1px solid #800020;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+.brand {
+  font-family: 'Chillax', sans-serif;
+  font-size: 4cqb;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btnLogin {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 2px solid white;
+  transition: all 0.2s;
+}
+
+.btnLogin:hover {
+  background: white;
+  color: #800020;
+}
+
+.btnRegister {
+  background: white;
+  color: #800020;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 8px 20px;
+  border-radius: 50px;
+  transition: all 0.2s;
+}
+
+.btnRegister:hover {
+  background: #600018;
+  color: white;
+}

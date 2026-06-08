@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./styles.module.css";
 import logo from "../../assets/images/brand.png";
 import { apiService } from "../../services/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 export function Register() {
   const [step, setStep] = useState(1);
@@ -15,6 +17,10 @@ export function Register() {
   const [confirmEmail, setConfirmEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Visualizar senha
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Etapa 2
   const [dataAcolhimento, setDataAcolhimento] = useState("");
@@ -50,7 +56,6 @@ export function Register() {
     setStep(2);
   }
 
-
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 11);
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
@@ -59,7 +64,6 @@ export function Register() {
     setCpf(value);
   };
 
-  // ✅ FORA do handleRegister
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 11);
     value = value.replace(/(\d{2})(\d)/, "($1) $2");
@@ -152,22 +156,49 @@ export function Register() {
                       <label>Nome Completo</label>
                       <input type="text" className="form-control" placeholder="Digite seu nome completo" value={name} onChange={(e) => setName(e.target.value)} />
                     </div>
+
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>E-mail</label>
                       <input type="email" className="form-control" placeholder="Digite seu melhor e-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
+
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>Confirmar E-mail</label>
                       <input type="email" className="form-control" placeholder="Repita seu e-mail" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} />
                     </div>
+
                     <div className={`${styles.inputGroup} mb-3`}>
                       <label>Senha</label>
-                      <input type="password" className="form-control" placeholder="Crie uma senha forte" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <div className={styles.passwordWrapper}>
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          className={`form-control ${styles.passwordInput}`}
+                          placeholder="Crie uma senha forte"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword(p => !p)} tabIndex={-1}>
+                          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                        </button>
+                      </div>
                     </div>
+
                     <div className={`${styles.inputGroup} mb-4`}>
                       <label>Confirmar Senha</label>
-                      <input type="password" className="form-control" placeholder="Repita a senha criada" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                      <div className={styles.passwordWrapper}>
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          className={`form-control ${styles.passwordInput}`}
+                          placeholder="Repita a senha criada"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        <button type="button" className={styles.eyeBtn} onClick={() => setShowConfirmPassword(p => !p)} tabIndex={-1}>
+                          <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                        </button>
+                      </div>
                     </div>
+
                     <button type="button" onClick={handleNextStep} className={`${styles.btnCadastrar} w-100`}>
                       Continuar para o Questionário
                     </button>
@@ -184,57 +215,49 @@ export function Register() {
                           <input type="date" className="form-control" value={dataAcolhimento} onChange={(e) => setDataAcolhimento(e.target.value)} />
                         </div>
                       </div>
-
                       <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Horário</label>
                           <input type="time" className="form-control" value={horario} onChange={(e) => setHorario(e.target.value)} />
                         </div>
                       </div>
-
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Equipe de Atendimento</label>
                           <input type="text" className="form-control" placeholder="Equipe de Atendimento" value={equipeAtendimento} onChange={(e) => setEquipeAtendimento(e.target.value)} />
                         </div>
                       </div>
-
                       <div className="col-12 col-sm-8">
                         <div className={styles.inputGroup}>
                           <label>CPF</label>
                           <input type="text" className="form-control" placeholder="000.000.000-00" value={cpf} onChange={handleCpfChange} maxLength={14} />
                         </div>
                       </div>
-
                       <div className="col-12 col-sm-4">
                         <div className={styles.inputGroup}>
                           <label>Idade</label>
                           <input type="number" className="form-control" placeholder="Idade" value={idade} onChange={(e) => setIdade(e.target.value)} min="0" max="150" />
                         </div>
                       </div>
-
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Telefone</label>
                           <input type="tel" className="form-control" placeholder="(00) 00000-0000" value={telefone} onChange={handleTelefoneChange} maxLength={15} />
                         </div>
                       </div>
-
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Endereço Residencial Completo</label>
                           <input type="text" className="form-control" placeholder="Endereço Residencial Completo" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
                         </div>
                       </div>
-
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Órgão responsável pelo encaminhamento</label>
                           <input type="text" className="form-control" placeholder="Órgão responsável pelo encaminhamento" value={orgaoEncaminhamento} onChange={(e) => setOrgaoEncaminhamento(e.target.value)} />
                         </div>
                       </div>
-
-                         <div className="col-12">
+                      <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Estado Civil</label>
                           <select className="form-select" value={estadoCivil} onChange={(e) => setEstadoCivil(e.target.value)}>
@@ -246,21 +269,19 @@ export function Register() {
                           </select>
                         </div>
                       </div>
-
-                       <div className="col-12 col-sm-6">
+                      <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Gênero</label>
                           <select className="form-select" value={genero} onChange={(e) => setGenero(e.target.value)}>
                             <option value="">Selecione...</option>
                             <option value="Masculino">Masculino</option>
                             <option value="Feminino">Feminino</option>
-                             <option value="Transgênero">Transgênero</option>
+                            <option value="Transgênero">Transgênero</option>
                             <option value="Outro">Outro</option>
                           </select>
                         </div>
                       </div>
-
-                     <div className="col-12 col-sm-6">
+                      <div className="col-12 col-sm-6">
                         <div className={styles.inputGroup}>
                           <label>Orientação Sexual</label>
                           <select className="form-select" value={orientacaoSexual} onChange={(e) => setOrientacaoSexual(e.target.value)}>
@@ -272,8 +293,7 @@ export function Register() {
                           </select>
                         </div>
                       </div>
-
-                        <div className="col-12">
+                      <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Identificação Étnico-Racial</label>
                           <select className="form-select" value={identificacaoEtnicoRacial} onChange={(e) => setIdentificacaoEtnicoRacial(e.target.value)}>
@@ -286,7 +306,6 @@ export function Register() {
                           </select>
                         </div>
                       </div>
-                           
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Grau de Escolaridade</label>
@@ -301,15 +320,12 @@ export function Register() {
                           </select>
                         </div>
                       </div>
-                          
-
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Função/Trabalho Atual</label>
                           <input type="text" className="form-control" placeholder="Função/Trabalho Atual" value={funcaoAtual} onChange={(e) => setFuncaoAtual(e.target.value)} />
                         </div>
                       </div>
-                      
                       <div className="col-12">
                         <div className={styles.inputGroup}>
                           <label>Interesse nas oficinas do instituto?</label>
