@@ -92,3 +92,34 @@
   flex-shrink: 0;
   border: 2px solid rgba(255,255,255,0.4);
 }
+
+/* ── BOTÃO SAIR ── */
+.navLogout {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Chillax', sans-serif;
+  color: white;
+}
+
+.navLogout:hover {
+  background-color: #b52244;
+  border-color: transparent;
+}
+
+/* ── LINK ATIVO ── */
+.active {
+  background-color: #b52244;
+  padding-left: 45px;
+}
+
+/* ── RESPONSIVO MOBILE ── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 20px 0;
+  }
+}

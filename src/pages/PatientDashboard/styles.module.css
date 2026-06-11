@@ -1,0 +1,53 @@
+.page { padding: 28px 32px; max-width: 1100px; margin: 0 auto; font-family: 'Chillax', sans-serif; }
+.pageHeader { margin-bottom: 24px; }
+.title { font-size: 1.7rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+.subtitle { color: #888; font-size: 0.9rem; margin: 4px 0 0; }
+
+.statsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.statCard { background: white; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #f0ebe5; }
+.statIcon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.statLabel { font-size: 0.78rem; color: #888; margin: 0 0 2px; }
+.statNumber { font-size: 1.7rem; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+.card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #f0ebe5; }
+.cardHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f0ebe5; }
+.cardHead h3 { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+
+/* CONSULTAS */
+.consultaList { display: flex; flex-direction: column; gap: 12px; }
+.consultaItem { display: flex; align-items: center; gap: 14px; padding: 12px; background: #faf7f4; border-radius: 10px; }
+.consultaData { display: flex; flex-direction: column; align-items: center; background: #800020; color: white; border-radius: 10px; padding: 8px 12px; min-width: 50px; }
+.consultaDia { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.consultaMes { font-size: 0.7rem; text-transform: uppercase; }
+.consultaInfo { flex: 1; }
+.consultaTipo { font-weight: 600; font-size: 0.9rem; color: #1a1a1a; margin: 0; }
+.consultaProf { font-size: 0.8rem; color: #666; margin: 2px 0; }
+.consultaHora { font-size: 0.78rem; color: #888; margin: 0; }
+.consultaStatus { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.statusConfirmada { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.statusPendente { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+
+/* TAREFAS */
+.tarefaList { display: flex; flex-direction: column; gap: 12px; }
+.tarefaItem { display: flex; gap: 12px; padding: 12px; background: #faf7f4; border-radius: 10px; border-left: 3px solid #800020; }
+.tarefaFeita { opacity: 0.6; border-left-color: #2e7d32; }
+.tarefaCheck { padding-top: 2px; }
+.tarefaInfo { flex: 1; }
+.tarefaTitulo { font-weight: 600; font-size: 0.9rem; color: #1a1a1a; margin: 0 0 4px; }
+.tarefaDesc { font-size: 0.82rem; color: #666; margin: 0 0 6px; line-height: 1.4; }
+.tarefaPrazo { font-size: 0.75rem; color: #888; }
+
+/* OFICINAS */
+.oficinaGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.oficinaCard { background: #faf7f4; border-radius: 12px; padding: 16px; border: 1px solid #f0ebe5; }
+.oficinaTopo { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.oficinaData { font-size: 0.78rem; color: #800020; font-weight: 600; }
+.oficinaHora { font-size: 0.78rem; color: #888; }
+.oficinaTitulo { font-size: 0.95rem; font-weight: 700; color: #1a1a1a; margin: 0 0 6px; }
+.oficinaLocal { font-size: 0.8rem; color: #666; margin: 0 0 4px; }
+.oficinaVagas { font-size: 0.75rem; color: #888; margin: 0 0 12px; }
+.btnInscrever { width: 100%; background: #800020; color: white; border: none; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btnInscrever:hover { background: #600018; }

@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import styles from "./styles.module.css";
@@ -6,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faHouse, faUserShield, faUsers, faFileAlt, faChartBar,
   faRightFromBracket, faRightToBracket, faUserPlus, faGear,
+  faCalendarCheck, faTasks,
 } from '@fortawesome/free-solid-svg-icons';
 
 export function Header() {
@@ -15,11 +17,11 @@ export function Header() {
   const userName = localStorage.getItem("@Umanizzare:name") || "Usuário";
   const userLoggedRole = localStorage.getItem("@Umanizzare:role") || "USER";
   const isAdm = userLoggedRole === "ADMIN";
+  const isPsicologo = userLoggedRole === "PSICOLOGO";
+  const isPaciente = userLoggedRole === "PACIENTE" || userLoggedRole === "USER";
   const isAuthenticated = !!token;
 
-  const [picture, setPicture] = useState(
-    localStorage.getItem("@Umanizzare:picture") || ""
-  );
+  const [picture, setPicture] = useState(localStorage.getItem("@Umanizzare:picture") || "");
 
   useEffect(() => {
     function handleUpdate() {
@@ -46,19 +48,18 @@ export function Header() {
 
   return (
     <aside className={styles.sidebar}>
-
       <div className={styles.logoArea}>
         <img src={logo} alt="Umanizzare" className={styles.logoImage} />
         <h1 className={styles.brandName}>Umanizzare</h1>
       </div>
 
       <nav className={styles.nav}>
-
         <Link to="/" className={`${styles.navLink} ${isActive("/")}`}>
           <FontAwesomeIcon icon={faHouse} className={styles.navIcon} />
           Início
         </Link>
 
+        {/* ADMIN */}
         {isAdm && (
           <Link to="/admin/users" className={`${styles.navLink} ${isActive("/admin/users")}`}>
             <FontAwesomeIcon icon={faUserShield} className={styles.navIcon} />
@@ -66,20 +67,35 @@ export function Header() {
           </Link>
         )}
 
-        <a href="#pacientes" className={styles.navLink}>
-          <FontAwesomeIcon icon={faUsers} className={styles.navIcon} />
-          Pacientes
-        </a>
+        {/* PSICÓLOGO E ADMIN */}
+        {(isAdm || isPsicologo) && (
+          <Link to="/patients" className={`${styles.navLink} ${isActive("/patients")}`}>
+            <FontAwesomeIcon icon={faUsers} className={styles.navIcon} />
+            Pacientes
+          </Link>
+        )}
 
-        <a href="#documentos" className={styles.navLink}>
+        {/* PACIENTE */}
+        {isPaciente && (
+          <Link to="/dashboard" className={`${styles.navLink} ${isActive("/dashboard")}`}>
+            <FontAwesomeIcon icon={faCalendarCheck} className={styles.navIcon} />
+            Minha Área
+          </Link>
+        )}
+
+        {/* TODOS AUTENTICADOS */}
+        <Link to="/documents" className={`${styles.navLink} ${isActive("/documents")}`}>
           <FontAwesomeIcon icon={faFileAlt} className={styles.navIcon} />
           Documentos
-        </a>
+        </Link>
 
-        <a href="#consultas" className={styles.navLink}>
-          <FontAwesomeIcon icon={faChartBar} className={styles.navIcon} />
-          Relatórios
-        </a>
+        {/* ADMIN E PSICÓLOGO */}
+        {(isAdm || isPsicologo) && (
+          <Link to="/reports" className={`${styles.navLink} ${isActive("/reports")}`}>
+            <FontAwesomeIcon icon={faChartBar} className={styles.navIcon} />
+            Relatórios
+          </Link>
+        )}
 
         {isAuthenticated ? (
           <>
@@ -87,18 +103,14 @@ export function Header() {
               {picture ? (
                 <img src={picture} alt={userName} className={styles.navAvatar} />
               ) : (
-                <div className={styles.navAvatarPlaceholder}>
-                  {getInitials(userName)}
-                </div>
+                <div className={styles.navAvatarPlaceholder}>{getInitials(userName)}</div>
               )}
               <span>Olá, {userName}</span>
             </div>
-
             <Link to="/settings" className={`${styles.navLink} ${isActive("/settings")}`}>
               <FontAwesomeIcon icon={faGear} className={styles.navIcon} />
               Configurações
             </Link>
-
             <button onClick={handleLogout} className={`${styles.navLink} ${styles.navLogout}`}>
               <FontAwesomeIcon icon={faRightFromBracket} className={styles.navIcon} />
               Sair
@@ -116,7 +128,6 @@ export function Header() {
             </Link>
           </>
         )}
-
       </nav>
     </aside>
   );
