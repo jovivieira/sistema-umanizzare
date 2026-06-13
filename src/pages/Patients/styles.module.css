@@ -1,0 +1,57 @@
+
+.page { padding: 28px 32px; max-width: 1100px; margin: 0 auto; font-family: 'Chillax', sans-serif; }
+.pageHeader { margin-bottom: 24px; }
+.title { font-size: 1.7rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+.subtitle { color: #888; font-size: 0.9rem; margin: 4px 0 0; }
+
+.statsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.statCard { background: white; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #f0ebe5; }
+.statIcon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.statLabel { font-size: 0.78rem; color: #888; margin: 0 0 2px; }
+.statNumber { font-size: 1.7rem; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1; }
+
+.searchWrapper { position: relative; margin-bottom: 16px; }
+.searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #888; }
+.searchInput { width: 100%; padding: 11px 16px 11px 40px; border: 1px solid #e0d8d0; border-radius: 10px; background: white; font-size: 0.9rem; outline: none; }
+.searchInput:focus { border-color: #800020; box-shadow: 0 0 0 3px rgba(128,0,32,0.08); }
+
+.tableWrapper { display: none; background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #f0ebe5; overflow: hidden; margin-bottom: 16px; }
+@media (min-width: 768px) { .tableWrapper { display: block; } .cardList { display: none !important; } }
+
+.table { width: 100%; border-collapse: collapse; }
+.table th { padding: 12px 16px; text-align: left; font-size: 0.8rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid #f0ebe5; }
+.table td { padding: 13px 16px; border-bottom: 1px solid #f9f5f1; font-size: 0.88rem; color: #333; }
+.table tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: #fdf8f5; }
+
+.userInfo { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #800020, #b0003a); color: white; font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.userName { font-weight: 600; color: #1a1a1a; font-size: 0.88rem; margin: 0; }
+.userEmail { color: #aaa; font-size: 0.76rem; margin: 2px 0 0; }
+.contactCell p { margin: 0; font-size: 0.82rem; color: #555; }
+
+.badgeAtivo { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 3px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; }
+.badgeInativo { background: #fdecea; color: #800020; border: 1px solid #f5c0c0; padding: 3px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; }
+
+.actions { display: flex; gap: 6px; }
+.actionBtn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e0d8d0; background: white; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: #555; }
+.actionBtn:hover { border-color: #800020; background: #fdecea; color: #800020; }
+
+.cardList { display: flex; flex-direction: column; gap: 10px; }
+.card { background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0ebe5; }
+.cardHeader { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cardActions { display: flex; gap: 8px; }
+
+/* MODAL */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal { background: white; border-radius: 18px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; max-height: 90vh; overflow-y: auto; }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #f0ebe5; position: sticky; top: 0; background: white; }
+.modalHeader h3 { font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+.modalClose { background: none; border: none; font-size: 1rem; cursor: pointer; color: #888; padding: 4px 8px; border-radius: 6px; }
+.modalClose:hover { background: #f0ebe5; }
+.modalBody { padding: 24px; }
+.modalAvatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #800020, #b0003a); color: white; font-weight: 700; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.modalGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.modalField { display: flex; flex-direction: column; gap: 3px; }
+.modalFieldLabel { font-size: 0.72rem; font-weight: 600; color: #888; text-transform: uppercase; }
+.modalFieldValue { font-size: 0.88rem; color: #1a1a1a; }

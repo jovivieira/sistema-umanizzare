@@ -12,36 +12,30 @@ import { UsersManagement } from './pages/UsersManagement';
 import { Settings } from './pages/Settings';
 import { TakeQuestionnaire } from './pages/TakeQuestionnaire';
 import { QuestionnaireManagement } from './pages/QuestionnaireManagement';
+import { PatientDashboard } from './pages/PatientDashboard';
+import { Patients } from './pages/Patients';
+import { Documents } from './pages/Documents';
+import { Reports } from './pages/Reports';
 
 function AppRoutes() {
   const location = useLocation();
   const token = localStorage.getItem("@Umanizzare:token");
   const isAuthenticated = !!token;
-
   const rotasSemNavegacao = ['/login', '/register'];
   const esconderNavegacao = rotasSemNavegacao.includes(location.pathname);
-
-  // Home sem login: header simples no topo, sem sidebar
   const isHomeSemLogin = location.pathname === '/' && !isAuthenticated;
 
   return (
     <div className="app-wrapper" style={{ display: 'flex', flexDirection: isHomeSemLogin ? 'column' : 'row', minHeight: '100vh' }}>
-
-      {/* Header simples para home sem login */}
       {isHomeSemLogin && <HomeHeader />}
-
-      {/* Sidebar normal para usuários logados */}
       {!esconderNavegacao && !isHomeSemLogin && <Header />}
-
-      <div
-        style={{
-          flex: 1,
-          marginLeft: (!esconderNavegacao && !isHomeSemLogin) ? '300px' : '0px',
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-        }}
-      >
+      <div style={{
+        flex: 1,
+        marginLeft: (!esconderNavegacao && !isHomeSemLogin) ? '300px' : '0px',
+        display: 'flex',
+        flexDirection: 'column',
+        width: (!esconderNavegacao && !isHomeSemLogin) ? 'calc(100% - 300px)' : '100%',
+      }}>
         <main style={{ flex: 1, width: '100%' }}>
           <Routes>
             <Route path='/' element={<Home />} />
@@ -51,6 +45,11 @@ function AppRoutes() {
             <Route path='/settings' element={<Settings />} />
             <Route path='/questionnaire/:id' element={<TakeQuestionnaire />} />
             <Route path='/admin/questionnaires' element={<QuestionnaireManagement />} />
+            
+            <Route path='/dashboard' element={<PatientDashboard />} />
+            <Route path='/patients' element={<Patients />} />
+            <Route path='/documents' element={<Documents />} />
+            <Route path='/reports' element={<Reports />} />
 
             {/* Pagina Nao Encontrada */}
             <Route path='*' element={
@@ -58,11 +57,10 @@ function AppRoutes() {
                 <h2 className="text-muted">Página não encontrada</h2>
                 <Link to="/" className="btn btn-primary mt-3">Voltar para o Início</Link>
               </div> } />
-          </Routes>
+            </Routes>
         </main>
         {!esconderNavegacao && !isHomeSemLogin && <Footer />}
       </div>
-
     </div>
   );
 }
@@ -74,3 +72,4 @@ export function App() {
     </BrowserRouter>
   );
 }
+

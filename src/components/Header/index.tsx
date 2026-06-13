@@ -14,6 +14,8 @@ import {
   faUserPlus,
   faGear,
   faClipboardList,
+  faCalendarCheck,
+  faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 
 export function Header() {
@@ -22,9 +24,10 @@ export function Header() {
   const token = localStorage.getItem("@Umanizzare:token");
   const userName = localStorage.getItem("@Umanizzare:name") || "PACIENTE";
   const userLoggedRole = localStorage.getItem("@Umanizzare:role") || "PACIENTE";
+  
   const isAdm = userLoggedRole === "ADMIN";
-  // const isPaciente = userLoggedRole === "PACIENTE";
-  const isPaciente = userLoggedRole === "ADMIN";
+  const isPsicologo = userLoggedRole === "PSICOLOGO";
+  const isPaciente = userLoggedRole === "PACIENTE";
   const isAuthenticated = !!token;
 
   const [picture, setPicture] = useState(
@@ -73,50 +76,58 @@ export function Header() {
           Início
         </Link>
 
-        {isAuthenticated && isPaciente && (
-          <Link
-            to="/questionnaire/1"
-            className={`${styles.navLink} ${isActive("/questionnaire/1")}`}
-          >
-            <FontAwesomeIcon icon={faClipboardList} className={styles.navIcon} />
-            Avaliação de Risco
-          </Link>
-        )}
-
+        {/* ADMIN */}
         {isAdm && (
           <>
-            <Link
-              to="/admin/users"
-              className={`${styles.navLink} ${isActive("/admin/users")}`}
-            >
+            <Link to="/admin/users" className={`${styles.navLink} ${isActive("/admin/users")}`}>
               <FontAwesomeIcon icon={faUserShield} className={styles.navIcon} />
               Painel Admin
             </Link>
 
-            <Link
-              to="/admin/questionnaires"
-              className={`${styles.navLink} ${isActive("/admin/questionnaires")}`}
-            >
+            <Link to="/admin/questionnaires" className={`${styles.navLink} ${isActive("/admin/questionnaires")}`}>
               <FontAwesomeIcon icon={faClipboardList} className={styles.navIcon} />
               Gerenciar Questionários
             </Link>
           </>
         )}
 
-        <a href="#pacientes" className={styles.navLink}>
-          <FontAwesomeIcon icon={faUsers} className={styles.navIcon} />
-          Pacientes
-        </a>
+        {/* PSICÓLOGO E ADMIN */}
+        {(isAdm || isPsicologo) && (
+          <Link to="/patients" className={`${styles.navLink} ${isActive("/patients")}`}>
+            <FontAwesomeIcon icon={faUsers} className={styles.navIcon} />
+            Pacientes
+          </Link>
+        )}
 
-        <a href="#documentos" className={styles.navLink}>
+        {/* PACIENTE */}
+        {isPaciente && (
+          <>
+            <Link to="/dashboard" className={`${styles.navLink} ${isActive("/dashboard")}`}>
+              <FontAwesomeIcon icon={faCalendarCheck} className={styles.navIcon} />
+              Minha Área
+            </Link>
+
+            {isAuthenticated && (
+              <Link to="/questionnaire/1" className={`${styles.navLink} ${isActive("/questionnaire/1")}`}>
+                <FontAwesomeIcon icon={faClipboardList} className={styles.navIcon} />
+                Avaliação de Risco
+              </Link>
+            )}
+          </>
+        )}
+
+        <Link to="/documents" className={`${styles.navLink} ${isActive("/documents")}`}>
           <FontAwesomeIcon icon={faFileAlt} className={styles.navIcon} />
           Documentos
-        </a>
+        </Link>
 
-        <a href="#consultas" className={styles.navLink}>
-          <FontAwesomeIcon icon={faChartBar} className={styles.navIcon} />
-          Relatórios
-        </a>
+        {/* ADMIN E PSICÓLOGO */}
+        {(isAdm || isPsicologo) && (
+          <Link to="/reports" className={`${styles.navLink} ${isActive("/reports")}`}>
+            <FontAwesomeIcon icon={faChartBar} className={styles.navIcon} />
+            Relatórios
+          </Link>
+        )}
 
         {isAuthenticated ? (
           <>
@@ -128,29 +139,16 @@ export function Header() {
                   className={styles.navAvatar}
                 />
               ) : (
-                <div className={styles.navAvatarPlaceholder}>
-                  {getInitials(userName)}
-                </div>
+                <div className={styles.navAvatarPlaceholder}>{getInitials(userName)}</div>
               )}
               <span>Olá, {userName}</span>
             </div>
-
-            <Link
-              to="/settings"
-              className={`${styles.navLink} ${isActive("/settings")}`}
-            >
+            <Link to="/settings" className={`${styles.navLink} ${isActive("/settings")}`}>
               <FontAwesomeIcon icon={faGear} className={styles.navIcon} />
               Configurações
             </Link>
-
-            <button
-              onClick={handleLogout}
-              className={`${styles.navLink} ${styles.navLogout}`}
-            >
-              <FontAwesomeIcon
-                icon={faRightFromBracket}
-                className={styles.navIcon}
-              />
+            <button onClick={handleLogout} className={`${styles.navLink} ${styles.navLogout}`}>
+              <FontAwesomeIcon icon={faRightFromBracket} className={styles.navIcon} />
               Sair
             </button>
           </>
