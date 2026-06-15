@@ -13,6 +13,7 @@ import { Settings } from './pages/Settings';
 import { TakeQuestionnaire } from './pages/TakeQuestionnaire';
 import { QuestionnaireManagement } from './pages/QuestionnaireManagement';
 import { PatientDashboard } from './pages/PatientDashboard';
+import { PsychologistDashboard } from './pages/PsychologistDashboard';
 import { Patients } from './pages/Patients';
 import { Documents } from './pages/Documents';
 import { Reports } from './pages/Reports';
@@ -23,6 +24,7 @@ function AppRoutes() {
   const role = localStorage.getItem("@Umanizzare:role");
   const isAuthenticated = !!token;
   const isPaciente = role === "USER" || role === "PACIENTE";
+  const isPsicologo = role === "PSICOLOGO";
 
   const rotasSemNavegacao = ['/login', '/register'];
   const rotasSemHeader = ['/dashboard'];
@@ -33,6 +35,13 @@ function AppRoutes() {
 
   const mostrarHeader = !esconderNavegacao && !isHomeSemLogin && !layoutProprio;
   const mostrarFooter = !esconderNavegacao && !isHomeSemLogin && !layoutProprio;
+
+  // Componente do dashboard baseado no role
+  function DashboardRoute() {
+    if (isPaciente) return <PatientDashboard />;
+    if (isPsicologo) return <PsychologistDashboard />;
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div
@@ -57,27 +66,24 @@ function AppRoutes() {
       >
         <main style={{ flex: 1, width: '100%' }}>
           <Routes>
-            {/* Redireciona paciente para o dashboard */}
             <Route
               path='/'
               element={
-                isAuthenticated && isPaciente
+                isAuthenticated && (isPaciente || isPsicologo)
                   ? <Navigate to="/dashboard" replace />
                   : <Home />
               }
             />
-
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
             <Route path='/admin/users' element={<UsersManagement />} />
             <Route path='/settings' element={<Settings />} />
             <Route path='/questionnaire/:id' element={<TakeQuestionnaire />} />
             <Route path='/admin/questionnaires' element={<QuestionnaireManagement />} />
-            <Route path='/dashboard' element={<PatientDashboard />} />
+            <Route path='/dashboard' element={<DashboardRoute />} />
             <Route path='/patients' element={<Patients />} />
             <Route path='/documents' element={<Documents />} />
             <Route path='/reports' element={<Reports />} />
-
             <Route path='*' element={
               <div className="text-center mt-5 py-5">
                 <h2 className="text-muted">Página não encontrada</h2>
@@ -86,7 +92,6 @@ function AppRoutes() {
             } />
           </Routes>
         </main>
-
         {mostrarFooter && <Footer />}
       </div>
     </div>
