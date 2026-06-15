@@ -1,0 +1,145 @@
+.sidebar {
+  width: 300px;
+  height: 100vh;
+  background-color: #800020;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+.logoArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.logoImage {
+  width: 75px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
+.brandName {
+  color: #ffffff;
+  font-family: 'Chillax', sans-serif;
+  font-weight: 300;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.navLink {
+  color: #ffffff;
+  font-family: 'Chillax', sans-serif;
+  font-size: 1.25rem;
+  text-decoration: none;
+  padding: 14px 40px;
+  width: 90%;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  background-color: transparent;
+  transition: all 0.25s ease-in-out;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navLink:hover {
+  background-color: #b52244;
+  padding-left: 45px;
+}
+
+.navIcon {
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.navUser {
+  cursor: default;
+  opacity: 0.9;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.navUser:hover {
+  background-color: transparent;
+  padding-left: 40px;
+}
+
+.navAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+
+.navAvatarPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+
+.navConfig {
+  margin-top: auto;
+}
+
+.navLogout {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.3) !important;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Chillax', sans-serif;
+  color: white;
+  border-radius: 0;
+  border-top-right-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+}
+
+.navLogout:hover {
+  background-color: #b52244 !important;
+  border-color: transparent !important;
+}
+
+.active {
+  background-color: #b52244;
+  padding-left: 45px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 20px 0;
+  }
+}

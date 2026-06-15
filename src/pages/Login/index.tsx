@@ -29,6 +29,8 @@ export function Login() {
       if (role) localStorage.setItem("@Umanizzare:role", role);
       const name = data.name || data.nome || data.user?.name || data.user?.nome;
       if (name) localStorage.setItem("@Umanizzare:name", name);
+      const id = data.id || data.user?.id;
+      if (id) localStorage.setItem("@Umanizzare:id", String(id));
       navigate("/");
       window.location.reload();
     } catch (err) {

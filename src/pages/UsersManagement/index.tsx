@@ -8,8 +8,15 @@ import {
   faEye, faPen, faLock, faLockOpen, faTrash,
   faUserPlus, faMagnifyingGlass, faXmark,
   faChevronLeft, faChevronRight, faAnglesLeft, faAnglesRight,
-  faFaceFrown,
+  faFaceFrown, faCalendarPlus, faClipboardList, faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
+
+const BASE_URL = "http://147.93.9.44:8002";
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem("@Umanizzare:token");
+  return token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+}
 
 interface User {
   id: string;
@@ -25,23 +32,22 @@ interface User {
   funcao_atual?: string;
 }
 
-// ✅ Carrega inativos do localStorage
+type Psicologo = { id: number; nome: string; email: string; crp?: string; };
+
 function loadInactiveIds(): Set<string> {
   try {
     const saved = localStorage.getItem("@Umanizzare:inactiveUsers");
     return saved ? new Set(JSON.parse(saved)) : new Set();
-  } catch {
-    return new Set();
-  }
+  } catch { return new Set(); }
 }
 
-// ✅ Salva inativos no localStorage
 function saveInactiveIds(ids: Set<string>) {
   localStorage.setItem("@Umanizzare:inactiveUsers", JSON.stringify([...ids]));
 }
 
 export function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
+  const [psicologos, setPsicologos] = useState<Psicologo[]>([]);
   const [inactiveIds, setInactiveIds] = useState<Set<string>>(loadInactiveIds);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -54,15 +60,28 @@ export function UsersManagement() {
   const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState<User["role"]>("USER");
   const [editLoading, setEditLoading] = useState(false);
+  const [loggedPicture, setLoggedPicture] = useState(localStorage.getItem("@Umanizzare:picture") || "");
 
-  const [loggedPicture, setLoggedPicture] = useState(
-    localStorage.getItem("@Umanizzare:picture") || ""
-  );
+  // Modal Consulta
+  const [modalConsulta, setModalConsulta] = useState<User | null>(null);
+  const [consultaData, setConsultaData] = useState("");
+  const [consultaHorario, setConsultaHorario] = useState("");
+  const [consultaPsicologoId, setConsultaPsicologoId] = useState("");
+  const [salvandoConsulta, setSalvandoConsulta] = useState(false);
+  const [erroConsulta, setErroConsulta] = useState("");
+
+  // Modal Tarefa
+  const [modalTarefa, setModalTarefa] = useState<User | null>(null);
+  const [tarefaTitulo, setTarefaTitulo] = useState("");
+  const [tarefaDescricao, setTarefaDescricao] = useState("");
+  const [salvandoTarefa, setSalvandoTarefa] = useState(false);
+  const [erroTarefa, setErroTarefa] = useState("");
 
   const navigate = useNavigate();
   const loggedName = localStorage.getItem("@Umanizzare:name") || "Usuário";
   const loggedRole = localStorage.getItem("@Umanizzare:role") || "USER";
   const isAdm = loggedRole === "ADMIN";
+  const isAdmOuPsi = isAdm || loggedRole === "PSICOLOGO";
 
   useEffect(() => {
     let isMounted = true;
@@ -77,16 +96,71 @@ export function UsersManagement() {
       }
     }
     loadUsers();
+    carregarPsicologos();
     return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
-    function handleUpdate() {
-      setLoggedPicture(localStorage.getItem("@Umanizzare:picture") || "");
-    }
+    function handleUpdate() { setLoggedPicture(localStorage.getItem("@Umanizzare:picture") || ""); }
     window.addEventListener("profileUpdated", handleUpdate);
     return () => window.removeEventListener("profileUpdated", handleUpdate);
   }, []);
+
+  async function carregarPsicologos() {
+    try {
+      const resp = await fetch(`${BASE_URL}/psicologos?limit=9999`, { headers: getAuthHeaders() });
+      if (resp.ok) {
+        const data = await resp.json();
+        setPsicologos(Array.isArray(data) ? data : data.psicologos || []);
+      }
+    } catch {}
+  }
+
+  async function handleAgendarConsulta() {
+    if (!modalConsulta || !consultaData || !consultaHorario) {
+      setErroConsulta("Preencha data e horário."); return;
+    }
+    try {
+      setSalvandoConsulta(true); setErroConsulta("");
+      const resp = await fetch(`${BASE_URL}/consultas`, {
+        method: "POST", headers: getAuthHeaders(),
+        body: JSON.stringify({
+          data: consultaData, horario: consultaHorario,
+          psicologoId: consultaPsicologoId ? Number(consultaPsicologoId) : undefined,
+        }),
+      });
+      const consulta = await resp.json();
+      if (!resp.ok) throw new Error(consulta.message || "Erro ao criar consulta.");
+      const resp2 = await fetch(`${BASE_URL}/consultas/${consulta.id}/pacientes`, {
+        method: "POST", headers: getAuthHeaders(),
+        body: JSON.stringify({ pacienteId: Number(modalConsulta.id) }),
+      });
+      if (!resp2.ok) { const d = await resp2.json(); throw new Error(d.message || "Erro ao vincular paciente."); }
+      alert(`Consulta agendada para ${modalConsulta.name} em ${consultaData} às ${consultaHorario}!`);
+      setModalConsulta(null); setConsultaData(""); setConsultaHorario(""); setConsultaPsicologoId("");
+    } catch (err) {
+      setErroConsulta(err instanceof Error ? err.message : "Erro ao agendar.");
+    } finally { setSalvandoConsulta(false); }
+  }
+
+  async function handleAtribuirTarefa() {
+    if (!modalTarefa || !tarefaTitulo.trim()) {
+      setErroTarefa("Preencha o título da tarefa."); return;
+    }
+    try {
+      setSalvandoTarefa(true); setErroTarefa("");
+      const resp = await fetch(`${BASE_URL}/tarefas`, {
+        method: "POST", headers: getAuthHeaders(),
+        body: JSON.stringify({ titulo: tarefaTitulo, descricao: tarefaDescricao }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.message || "Erro ao criar tarefa.");
+      alert(`Tarefa "${tarefaTitulo}" criada com sucesso!`);
+      setModalTarefa(null); setTarefaTitulo(""); setTarefaDescricao("");
+    } catch (err) {
+      setErroTarefa(err instanceof Error ? err.message : "Erro ao criar tarefa.");
+    } finally { setSalvandoTarefa(false); }
+  }
 
   function getRoleLabel(role: string) {
     switch (role) {
@@ -110,7 +184,6 @@ export function UsersManagement() {
     return name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
   }
 
-  // ✅ Persiste no localStorage ao togglear
   function toggleInactive(id: string) {
     setInactiveIds(prev => {
       const next = new Set(prev);
@@ -126,43 +199,23 @@ export function UsersManagement() {
     try {
       await apiService.deleteUser(id);
       setUsers(prev => prev.filter(u => u.id !== id));
-      // Remove dos inativos também
-      setInactiveIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        saveInactiveIds(next);
-        return next;
-      });
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir.");
-    }
+      setInactiveIds(prev => { const next = new Set(prev); next.delete(id); saveInactiveIds(next); return next; });
+    } catch (err) { alert(err instanceof Error ? err.message : "Erro ao excluir."); }
   }
 
   function openEdit(user: User) {
-    setEditUser(user);
-    setEditName(user.name);
-    setEditEmail(user.email);
-    setEditRole(user.role);
+    setEditUser(user); setEditName(user.name); setEditEmail(user.email); setEditRole(user.role);
   }
 
   async function handleSaveEdit() {
     if (!editUser) return;
     setEditLoading(true);
     try {
-      await (apiService as any).updateUser(editUser.id, {
-        name: editName,
-        email: editEmail,
-        role: editRole,
-      });
-      setUsers(prev => prev.map(u =>
-        u.id === editUser.id ? { ...u, name: editName, email: editEmail, role: editRole } : u
-      ));
+      await (apiService as any).updateUser(editUser.id, { name: editName, email: editEmail, role: editRole });
+      setUsers(prev => prev.map(u => u.id === editUser.id ? { ...u, name: editName, email: editEmail, role: editRole } : u));
       setEditUser(null);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar.");
-    } finally {
-      setEditLoading(false);
-    }
+    } catch (err) { alert(err instanceof Error ? err.message : "Erro ao salvar."); }
+    finally { setEditLoading(false); }
   }
 
   const filteredUsers = users.filter(u => {
@@ -173,7 +226,6 @@ export function UsersManagement() {
   const totalAdmins = users.filter(u => u.role === "ADMIN").length;
   const totalAtivos = users.filter(u => !inactiveIds.has(u.id)).length;
   const totalInativos = users.filter(u => inactiveIds.has(u.id)).length;
-
   const indexOfFirst = (currentPage - 1) * itemsPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirst, indexOfFirst + itemsPerPage);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -206,8 +258,7 @@ export function UsersManagement() {
         <div className={styles.topBarRight}>
           {isAdm && (
             <button className={styles.btnNew} onClick={() => navigate("/register")}>
-              <FontAwesomeIcon icon={faUserPlus} style={{ marginRight: 8 }} />
-              Novo paciente
+              <FontAwesomeIcon icon={faUserPlus} style={{ marginRight: 8 }} />Novo paciente
             </button>
           )}
           <div className={styles.userBadge}>
@@ -246,21 +297,12 @@ export function UsersManagement() {
       <div className={styles.toolbar}>
         <div className={styles.searchWrapper}>
           <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Buscar usuário por nome ou e-mail..."
-            value={searchTerm}
-            onChange={e => { 
-              setSearchTerm(e.target.value); 
-              setCurrentPage(1); 
-            }}
-            className={styles.searchInput}
-          />
+          <input type="text" placeholder="Buscar usuário por nome ou e-mail..." value={searchTerm}
+            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className={styles.searchInput} />
         </div>
         {searchTerm && (
           <button className={styles.clearBtn} onClick={() => { setSearchTerm(""); setCurrentPage(1); }}>
-            <FontAwesomeIcon icon={faXmark} style={{ marginRight: 6 }} />
-            Limpar filtros
+            <FontAwesomeIcon icon={faXmark} style={{ marginRight: 6 }} />Limpar filtros
           </button>
         )}
       </div>
@@ -269,13 +311,7 @@ export function UsersManagement() {
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
-            <tr>
-              <th>Usuário</th>
-              <th>E-mail</th>
-              <th>Nível</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
+            <tr><th>Usuário</th><th>E-mail</th><th>Nível</th><th>Status</th><th>Ações</th></tr>
           </thead>
           <tbody>
             {currentUsers.length > 0 ? currentUsers.map(user => (
@@ -283,37 +319,28 @@ export function UsersManagement() {
                 <td>
                   <div className={styles.userInfo}>
                     <div className={styles.avatar}>{getInitials(user.name)}</div>
-                    <div>
-                      <p className={styles.userName}>{user.name}</p>
-                      <p className={styles.userEmail}>{user.email}</p>
-                    </div>
+                    <div><p className={styles.userName}>{user.name}</p><p className={styles.userEmail}>{user.email}</p></div>
                   </div>
                 </td>
                 <td className={styles.emailCell}>{user.email}</td>
-                <td>
-                  <span className={getRoleBadgeClass(user.role)}>
-                    {getRoleLabel(user.role)}
-                  </span>
-                </td>
-                <td>
-                  <span className={inactiveIds.has(user.id) ? styles.badgeInativo : styles.badgeAtivo}>
-                    {inactiveIds.has(user.id) ? "Inativo" : "Ativo"}
-                  </span>
-                </td>
+                <td><span className={getRoleBadgeClass(user.role)}>{getRoleLabel(user.role)}</span></td>
+                <td><span className={inactiveIds.has(user.id) ? styles.badgeInativo : styles.badgeAtivo}>{inactiveIds.has(user.id) ? "Inativo" : "Ativo"}</span></td>
                 <td>
                   <div className={styles.actions}>
-                    <button className={styles.actionBtn} title="Visualizar" onClick={() => setViewUser(user)}>
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
+                    <button className={styles.actionBtn} title="Visualizar" onClick={() => setViewUser(user)}><FontAwesomeIcon icon={faEye} /></button>
+                    {isAdmOuPsi && (
+                      <>
+                        <button className={styles.actionBtn} title="Agendar consulta" onClick={() => { setModalConsulta(user); setErroConsulta(""); }}>
+                          <FontAwesomeIcon icon={faCalendarPlus} />
+                        </button>
+                        <button className={styles.actionBtn} title="Atribuir tarefa" onClick={() => { setModalTarefa(user); setErroTarefa(""); }}>
+                          <FontAwesomeIcon icon={faClipboardList} />
+                        </button>
+                      </>
+                    )}
                     {isAdm && <>
-                      <button className={styles.actionBtn} title="Editar" onClick={() => openEdit(user)}>
-                        <FontAwesomeIcon icon={faPen} />
-                      </button>
-                      <button
-                        className={styles.actionBtn}
-                        title={inactiveIds.has(user.id) ? "Ativar" : "Inativar"}
-                        onClick={() => toggleInactive(user.id)}
-                      >
+                      <button className={styles.actionBtn} title="Editar" onClick={() => openEdit(user)}><FontAwesomeIcon icon={faPen} /></button>
+                      <button className={styles.actionBtn} title={inactiveIds.has(user.id) ? "Ativar" : "Inativar"} onClick={() => toggleInactive(user.id)}>
                         <FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} />
                       </button>
                       <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Excluir" onClick={() => handleDelete(user.id, user.name)}>
@@ -341,28 +368,19 @@ export function UsersManagement() {
           <div key={user.id} className={`${styles.card} ${inactiveIds.has(user.id) ? styles.cardInactive : ""}`}>
             <div className={styles.cardHeader}>
               <div className={styles.avatar}>{getInitials(user.name)}</div>
-              <div className={styles.cardInfo}>
-                <p className={styles.userName}>{user.name}</p>
-                <p className={styles.userEmail}>{user.email}</p>
-              </div>
-              <span className={getRoleBadgeClass(user.role)}>
-                {getRoleLabel(user.role)}
-              </span>
+              <div className={styles.cardInfo}><p className={styles.userName}>{user.name}</p><p className={styles.userEmail}>{user.email}</p></div>
+              <span className={getRoleBadgeClass(user.role)}>{getRoleLabel(user.role)}</span>
             </div>
             <div className={styles.cardActions}>
-              <button className={styles.actionBtn} onClick={() => setViewUser(user)}>
-                <FontAwesomeIcon icon={faEye} />
-              </button>
+              <button className={styles.actionBtn} onClick={() => setViewUser(user)}><FontAwesomeIcon icon={faEye} /></button>
+              {isAdmOuPsi && <>
+                <button className={styles.actionBtn} onClick={() => { setModalConsulta(user); setErroConsulta(""); }}><FontAwesomeIcon icon={faCalendarPlus} /></button>
+                <button className={styles.actionBtn} onClick={() => { setModalTarefa(user); setErroTarefa(""); }}><FontAwesomeIcon icon={faClipboardList} /></button>
+              </>}
               {isAdm && <>
-                <button className={styles.actionBtn} onClick={() => openEdit(user)}>
-                  <FontAwesomeIcon icon={faPen} />
-                </button>
-                <button className={styles.actionBtn} onClick={() => toggleInactive(user.id)}>
-                  <FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} />
-                </button>
-                <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} onClick={() => handleDelete(user.id, user.name)}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
+                <button className={styles.actionBtn} onClick={() => openEdit(user)}><FontAwesomeIcon icon={faPen} /></button>
+                <button className={styles.actionBtn} onClick={() => toggleInactive(user.id)}><FontAwesomeIcon icon={inactiveIds.has(user.id) ? faLockOpen : faLock} /></button>
+                <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} onClick={() => handleDelete(user.id, user.name)}><FontAwesomeIcon icon={faTrash} /></button>
               </>}
             </div>
           </div>
@@ -375,28 +393,18 @@ export function UsersManagement() {
           Mostrando {filteredUsers.length === 0 ? 0 : indexOfFirst + 1} a {Math.min(indexOfFirst + itemsPerPage, filteredUsers.length)} de {filteredUsers.length} usuários
         </p>
         <div className={styles.pagination}>
-          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className={styles.pageBtn}>
-            <FontAwesomeIcon icon={faAnglesLeft} />
-          </button>
-          <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className={styles.pageBtn}>
-            <FontAwesomeIcon icon={faChevronLeft} />
-          </button>
+          <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className={styles.pageBtn}><FontAwesomeIcon icon={faAnglesLeft} /></button>
+          <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className={styles.pageBtn}><FontAwesomeIcon icon={faChevronLeft} /></button>
           {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
             <button key={p} onClick={() => setCurrentPage(p)} className={`${styles.pageBtn} ${currentPage === p ? styles.pageBtnActive : ""}`}>{p}</button>
           ))}
-          <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className={styles.pageBtn}>
-            <FontAwesomeIcon icon={faChevronRight} />
-          </button>
-          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className={styles.pageBtn}>
-            <FontAwesomeIcon icon={faAnglesRight} />
-          </button>
+          <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className={styles.pageBtn}><FontAwesomeIcon icon={faChevronRight} /></button>
+          <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className={styles.pageBtn}><FontAwesomeIcon icon={faAnglesRight} /></button>
         </div>
         <div className={styles.itemsPerPage}>
           <span>Itens por página:</span>
           <select value={itemsPerPage} onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }} className={styles.itemsSelect}>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
+            <option value={5}>5</option><option value={10}>10</option><option value={20}>20</option>
           </select>
         </div>
       </div>
@@ -407,9 +415,7 @@ export function UsersManagement() {
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Detalhes do Usuário</h3>
-              <button onClick={() => setViewUser(null)} className={styles.modalClose}>
-                <FontAwesomeIcon icon={faXmark} />
-              </button>
+              <button onClick={() => setViewUser(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
             </div>
             <div className={styles.modalBody}>
               <div className={styles.modalAvatar}>{getInitials(viewUser.name)}</div>
@@ -444,19 +450,11 @@ export function UsersManagement() {
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Editar Usuário</h3>
-              <button onClick={() => setEditUser(null)} className={styles.modalClose}>
-                <FontAwesomeIcon icon={faXmark} />
-              </button>
+              <button onClick={() => setEditUser(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
             </div>
             <div className={styles.modalBody}>
-              <div className={styles.editField}>
-                <label>Nome</label>
-                <input value={editName} onChange={e => setEditName(e.target.value)} className={styles.editInput} />
-              </div>
-              <div className={styles.editField}>
-                <label>E-mail</label>
-                <input value={editEmail} onChange={e => setEditEmail(e.target.value)} className={styles.editInput} type="email" />
-              </div>
+              <div className={styles.editField}><label>Nome</label><input value={editName} onChange={e => setEditName(e.target.value)} className={styles.editInput} /></div>
+              <div className={styles.editField}><label>E-mail</label><input value={editEmail} onChange={e => setEditEmail(e.target.value)} className={styles.editInput} type="email" /></div>
               <div className={styles.editField}>
                 <label>Nível</label>
                 <select value={editRole} onChange={e => setEditRole(e.target.value as User["role"])} className={styles.editInput}>
@@ -468,8 +466,77 @@ export function UsersManagement() {
               </div>
               <div className={styles.modalFooter}>
                 <button onClick={() => setEditUser(null)} className={styles.btnCancel}>Cancelar</button>
-                <button onClick={handleSaveEdit} disabled={editLoading} className={styles.btnSave}>
-                  {editLoading ? "Salvando..." : "Salvar"}
+                <button onClick={handleSaveEdit} disabled={editLoading} className={styles.btnSave}>{editLoading ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL AGENDAR CONSULTA */}
+      {modalConsulta && (
+        <div className={styles.modalOverlay} onClick={() => setModalConsulta(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3><FontAwesomeIcon icon={faCalendarPlus} style={{ marginRight: 8, color: "#800020" }} />Agendar Consulta</h3>
+              <button onClick={() => setModalConsulta(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalAvatar}>{getInitials(modalConsulta.name)}</div>
+              <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 20, color: "#1a1a1a" }}>{modalConsulta.name}</p>
+              {erroConsulta && <div className={styles.erroInline}>{erroConsulta}</div>}
+              <div className={styles.editField}>
+                <label>Data *</label>
+                <input type="date" value={consultaData} onChange={e => setConsultaData(e.target.value)} className={styles.editInput} min={new Date().toISOString().split("T")[0]} />
+              </div>
+              <div className={styles.editField}>
+                <label>Horário *</label>
+                <input type="time" value={consultaHorario} onChange={e => setConsultaHorario(e.target.value)} className={styles.editInput} />
+              </div>
+              <div className={styles.editField}>
+                <label>Psicóloga responsável</label>
+                <select value={consultaPsicologoId} onChange={e => setConsultaPsicologoId(e.target.value)} className={styles.editInput}>
+                  <option value="">Selecione (opcional)</option>
+                  {psicologos.map(ps => (
+                    <option key={ps.id} value={ps.id}>{ps.nome}{ps.crp ? ` — CRP ${ps.crp}` : ""}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.modalFooter}>
+                <button onClick={() => setModalConsulta(null)} className={styles.btnCancel}>Cancelar</button>
+                <button onClick={handleAgendarConsulta} disabled={salvandoConsulta} className={styles.btnSave}>
+                  {salvandoConsulta ? <><FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: 6 }} />Agendando...</> : "Agendar consulta"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL ATRIBUIR TAREFA */}
+      {modalTarefa && (
+        <div className={styles.modalOverlay} onClick={() => setModalTarefa(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3><FontAwesomeIcon icon={faClipboardList} style={{ marginRight: 8, color: "#800020" }} />Atribuir Tarefa</h3>
+              <button onClick={() => setModalTarefa(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.modalAvatar}>{getInitials(modalTarefa.name)}</div>
+              <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 20, color: "#1a1a1a" }}>{modalTarefa.name}</p>
+              {erroTarefa && <div className={styles.erroInline}>{erroTarefa}</div>}
+              <div className={styles.editField}>
+                <label>Título da tarefa *</label>
+                <input type="text" placeholder="Ex: Diário de emoções" value={tarefaTitulo} onChange={e => setTarefaTitulo(e.target.value)} className={styles.editInput} />
+              </div>
+              <div className={styles.editField}>
+                <label>Descrição</label>
+                <textarea rows={4} placeholder="Descreva a tarefa para a paciente..." value={tarefaDescricao} onChange={e => setTarefaDescricao(e.target.value)} className={styles.editInput} style={{ resize: "vertical" }} />
+              </div>
+              <div className={styles.modalFooter}>
+                <button onClick={() => setModalTarefa(null)} className={styles.btnCancel}>Cancelar</button>
+                <button onClick={handleAtribuirTarefa} disabled={salvandoTarefa} className={styles.btnSave}>
+                  {salvandoTarefa ? <><FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: 6 }} />Salvando...</> : "Atribuir tarefa"}
                 </button>
               </div>
             </div>

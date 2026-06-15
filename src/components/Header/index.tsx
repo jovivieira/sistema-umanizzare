@@ -15,7 +15,6 @@ import {
   faGear,
   faClipboardList,
   faCalendarCheck,
-  faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 
 export function Header() {

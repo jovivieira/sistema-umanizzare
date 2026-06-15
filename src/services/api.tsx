@@ -191,9 +191,7 @@ export const apiService = {
       method: "DELETE",
       headers: getHeaders(true),
     });
-    
     if (response.status === 204) return null;
-    
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.message || "Erro ao excluir questionário.");
@@ -201,7 +199,7 @@ export const apiService = {
   },
 
   // BUSCAR QUESTIONARIO PELO ID
-  async getQuestionnaireById(id: string){
+  async getQuestionnaireById(id: string) {
     const response = await fetch(`${BASE_URL}/questionnaires/${id}`, {
       method: "GET",
       headers: getHeaders(true),
@@ -218,13 +216,91 @@ export const apiService = {
       headers: getHeaders(true),
       body: JSON.stringify(payload),
     });
-    
     if (response.status === 204) return null;
-
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || "Erro ao enviar respostas.");
     return data;
-}
+  },
 
+  // MINHAS CONSULTAS (paciente logado)
+  async getMinhasConsultas() {
+    const response = await fetch(`${BASE_URL}/consultas/minhas`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao buscar consultas.");
+    return data;
+  },
 
+  // WORKSHOPS
+  async getWorkshops(pacienteId?: number) {
+    const url = pacienteId
+      ? `${BASE_URL}/workshops?pacienteId=${pacienteId}`
+      : `${BASE_URL}/workshops`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao buscar workshops.");
+    return data;
+  },
+
+  // INSCREVER EM WORKSHOP
+  async inscreverWorkshop(id: number) {
+    const response = await fetch(`${BASE_URL}/workshops/${id}/inscrever`, {
+      method: "POST",
+      headers: getHeaders(true),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao se inscrever.");
+    return data;
+  },
+
+  // CANCELAR INSCRIÇÃO EM WORKSHOP
+  async cancelarWorkshop(id: number) {
+    const response = await fetch(`${BASE_URL}/workshops/${id}/cancelar`, {
+      method: "DELETE",
+      headers: getHeaders(false),
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || "Erro ao cancelar inscrição.");
+    }
+    return true;
+  },
+
+  // TAREFAS DO PACIENTE LOGADO
+  async getMinhasTarefas() {
+    const response = await fetch(`${BASE_URL}/tarefas`, {
+      method: "GET",
+      headers: getHeaders(true),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao buscar tarefas.");
+    return data;
+  },
+
+  // RESPONDER TAREFA
+  async responderTarefa(id: number, resposta: string) {
+    const response = await fetch(`${BASE_URL}/tarefas/${id}/responder`, {
+      method: "POST",
+      headers: getHeaders(true),
+      body: JSON.stringify({ resposta }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Erro ao responder tarefa.");
+    return data;
+  },
+// ARQUIVOS DO PACIENTE
+async getArquivosPaciente(pacienteId: string) {
+  const response = await fetch(`${BASE_URL}/fichas/${pacienteId}/arquivos`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao buscar arquivos.");
+  return data;
+},
 };

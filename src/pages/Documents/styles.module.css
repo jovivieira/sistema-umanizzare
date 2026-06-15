@@ -1,36 +1,128 @@
 .page { padding: 28px 32px; max-width: 1100px; margin: 0 auto; font-family: 'Chillax', sans-serif; }
-.pageHeader { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+
+.pageHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+
 .title { font-size: 1.7rem; font-weight: 700; color: #1a1a1a; margin: 0; }
 .subtitle { color: #888; font-size: 0.9rem; margin: 4px 0 0; }
 
-.btnUpload { background: #800020; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; }
-.btnUpload:hover { background: #600018; }
-
-.categorias { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.catBtn { background: white; border: 1px solid #e0d8d0; color: #555; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.catBtn:hover { border-color: #800020; color: #800020; }
-.catBtnActive { background: #800020; color: white; border-color: #800020; }
-
+/* BUSCA */
 .searchWrapper { position: relative; margin-bottom: 20px; }
 .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #888; }
-.searchInput { width: 100%; padding: 11px 16px 11px 40px; border: 1px solid #e0d8d0; border-radius: 10px; background: white; font-size: 0.9rem; outline: none; }
-.searchInput:focus { border-color: #800020; }
+.searchInput { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid #e0d8d0; border-radius: 10px; background: white; font-size: 0.95rem; outline: none; font-family: 'Chillax', sans-serif; }
+.searchInput:focus { border-color: #800020; box-shadow: 0 0 0 3px rgba(128,0,32,0.08); }
 
-.docGrid { display: flex; flex-direction: column; gap: 10px; }
-.docCard { background: white; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0ebe5; transition: all 0.2s; }
-.docCard:hover { border-color: #800020; transform: translateX(4px); }
+/* BOTÃO UPLOAD */
+.btnUpload {
+  display: inline-flex; align-items: center;
+  background: #800020; color: white; border: none;
+  padding: 10px 20px; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  font-family: 'Chillax', sans-serif; transition: background 0.2s;
+}
+.btnUpload:hover { background: #600018; }
+.btnUpload:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.docIcon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.btnUploadEmpty {
+  display: inline-flex; align-items: center;
+  background: #800020; color: white; border: none;
+  padding: 10px 24px; border-radius: 10px; margin-top: 16px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  font-family: 'Chillax', sans-serif;
+}
+
+/* BOTÃO VOLTAR */
+.btnVoltar {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid #e0d8d0; background: white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #555; font-size: 1rem;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.btnVoltar:hover { border-color: #800020; color: #800020; background: #fdecea; }
+
+/* GRID PACIENTES */
+.pacienteGrid { display: flex; flex-direction: column; gap: 10px; }
+
+.pacienteCard {
+  display: flex; align-items: center; gap: 14px;
+  background: white; border-radius: 12px;
+  border: 1px solid #f0ebe5; padding: 14px 18px;
+  cursor: pointer; text-align: left; width: 100%;
+  transition: all 0.2s; font-family: 'Chillax', sans-serif;
+}
+.pacienteCard:hover { border-color: #800020; background: #fdf8f5; transform: translateX(4px); }
+
+.pacienteAvatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #800020, #b0003a);
+  color: white; font-weight: 700; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.pacienteAvatarSm {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #800020, #b0003a);
+  color: white; font-weight: 700; font-size: 0.88rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.pacienteInfo { flex: 1; }
+.pacienteNome { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; margin: 0; }
+.pacienteEmail { font-size: 0.82rem; color: #888; margin: 2px 0 0; }
+
+.pacienteFolderIcon { color: #E09A3E; font-size: 1.2rem; flex-shrink: 0; }
+
+/* GRID DOCUMENTOS */
+.docGrid { display: flex; flex-direction: column; gap: 12px; }
+
+.docCard {
+  display: flex; align-items: center; gap: 16px;
+  background: white; border-radius: 12px;
+  border: 1px solid #f0ebe5; padding: 16px 20px;
+  transition: box-shadow 0.2s;
+}
+.docCard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.docIcon {
+  width: 52px; height: 52px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
 .docInfo { flex: 1; }
-.docNome { font-weight: 600; font-size: 0.9rem; color: #1a1a1a; margin: 0 0 3px; }
-.docMeta { font-size: 0.78rem; color: #888; margin: 0 0 6px; }
-.docCategoria { background: #fdecea; color: #800020; border: 1px solid #f5c0c0; padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.docNome { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; margin: 0 0 4px; }
+.docMeta { font-size: 0.82rem; color: #888; margin: 0; }
+.docCategoria { display: inline-block; background: #fdecea; color: #800020; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 20px; margin-top: 4px; }
 
-.docActions { display: flex; gap: 6px; }
-.actionBtn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e0d8d0; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: #555; transition: all 0.2s; }
+.docActions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.actionBtn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid #e0d8d0; background: white;
+  cursor: pointer; font-size: 0.9rem; color: #555;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; text-decoration: none;
+}
 .actionBtn:hover { border-color: #800020; background: #fdecea; color: #800020; }
-.actionBtnDelete:hover { border-color: #c0392b; background: #fdecea; color: #c0392b; }
 
-.empty { text-align: center; padding: 60px; color: #bbb; }
-.empty p { font-size: 0.9rem; margin: 0; }
-.emptyIcon { font-size: 2.5rem; margin-bottom: 12px; }
+.actionBtnDelete:hover { border-color: #c0392b !important; background: #fdecea !important; color: #c0392b !important; }
+
+/* ESTADOS */
+.loadingBlock {
+  display: flex; align-items: center;
+  padding: 24px; color: #800020; font-size: 0.95rem;
+}
+
+.erroBlock {
+  display: flex; align-items: center; gap: 14px;
+  background: #fdecea; color: #c0392b; border-radius: 10px;
+  padding: 14px 18px; font-size: 0.9rem; margin-bottom: 16px;
+}
+
+.retryBtn {
+  background: none; border: none; color: #800020;
+  text-decoration: underline; cursor: pointer;
+  font-family: 'Chillax', sans-serif;
+}
+
+.empty { text-align: center; padding: 48px 20px; color: #aaa; }
