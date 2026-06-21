@@ -294,8 +294,8 @@ export const apiService = {
     return data;
   },
 // ARQUIVOS DO PACIENTE
-async getArquivosPaciente(pacienteId: string) {
-  const response = await fetch(`${BASE_URL}/fichas/${pacienteId}/arquivos`, {
+async getArquivosPaciente() {
+  const response = await fetch(`${BASE_URL}/fichas/my-arquivos`, {
     method: "GET",
     headers: getHeaders(true),
   });
@@ -303,4 +303,15 @@ async getArquivosPaciente(pacienteId: string) {
   if (!response.ok) throw new Error(data.message || "Erro ao buscar arquivos.");
   return data;
 },
+
+async getPacientesPsicologos() {
+  const response = await fetch(`${BASE_URL}/psicologos/pacientes`, {
+    method: "GET",
+    headers: getHeaders(true),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || "Erro ao buscar pacientes.");
+  return data;
+},
+
 };

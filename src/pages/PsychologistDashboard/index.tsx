@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck, faUsers, faClipboardList, faGear,
   faRightFromBracket, faSpinner, faCalendarDay,
-  faCheckCircle, faXmarkCircle, faClock, faUserTie,
+  faCheckCircle, faXmarkCircle, faClock,
   faClipboardQuestion, faCalendarPlus, faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { apiService } from "../../services/api";
@@ -22,7 +22,7 @@ type Aba = "hoje" | "usuarios" | "questionarios";
 
 type Consulta = {
   id: number; data: string; horario: string; status?: string;
-  pacientes?: { id: number; name?: string; nome?: string; }[];
+  pacientes?: { id: number; pacienteId?: number; paciente?: any; relatorioCaminho: string }[];
   psicologo?: { name?: string; nome?: string; };
 };
 
@@ -97,8 +97,8 @@ export function PsychologistDashboard() {
   async function carregarUsuarios() {
     try {
       setLoadingUsuarios(true); setErroUsuarios("");
-      const data = await apiService.getUsers();
-      const lista = Array.isArray(data) ? data : data.users || [];
+      const data = await apiService.getPacientesPsicologos();
+      const lista = Array.isArray(data) ? data : data.pacientes || [];
       setUsuarios(lista.filter((u: User) => u.role !== "ADMIN"));
     } catch (err) {
       setErroUsuarios(err instanceof Error ? err.message : "Erro ao carregar usuários.");
@@ -251,8 +251,8 @@ export function PsychologistDashboard() {
               {consultas
                 .sort((a, b) => a.horario.localeCompare(b.horario))
                 .map(c => {
-                  const paciente = c.pacientes?.[0];
-                  const nomePaciente = paciente?.name || paciente?.nome || "Paciente";
+                  const paciente = c.pacientes?.[0].paciente;
+                  const nomePaciente = paciente?.name || "Paciente";
                   const inicialP = nomePaciente[0].toUpperCase();
                   return (
                     <div key={c.id} className={styles.consultaItem}>
@@ -267,8 +267,8 @@ export function PsychologistDashboard() {
                       </div>
                       <span className={
                         c.status === "realizada" || c.status === "confirmada" ? styles.badgeGreen
-                        : c.status === "cancelada" ? styles.badgeRed
-                        : styles.badgeAmber
+                          : c.status === "cancelada" ? styles.badgeRed
+                            : styles.badgeAmber
                       }>
                         {c.status || "Pendente"}
                       </span>
@@ -297,7 +297,7 @@ export function PsychologistDashboard() {
             <div className={styles.pacienteList}>
               {usuariosFiltrados.map(u => (
                 <div key={u.id} className={styles.pacienteItem}>
-                  <div className={styles.pacienteAvatar}>{u.name.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase()}</div>
+                  <div className={styles.pacienteAvatar}>{u.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}</div>
                   <div className={styles.pacienteInfo}>
                     <p className={styles.pacienteNome}>{u.name}</p>
                     <p className={styles.pacienteEmail}>{u.email}</p>
@@ -356,7 +356,7 @@ export function PsychologistDashboard() {
               <button onClick={() => setModalConsulta(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
             </div>
             <div className={styles.modalBody}>
-              <div className={styles.modalAvatar}>{modalConsulta.name.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase()}</div>
+              <div className={styles.modalAvatar}>{modalConsulta.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}</div>
               <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 20 }}>{modalConsulta.name}</p>
               {erroConsultaModal && <div className={styles.erroInline}>{erroConsultaModal}</div>}
               <div className={styles.formField}>
