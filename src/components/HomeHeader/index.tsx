@@ -11,7 +11,6 @@ export function HomeHeader() {
       </div>
       <div className={styles.right}>
         <Link to="/login" className={styles.btnLogin}>Entrar</Link>
-        <Link to="/register" className={styles.btnRegister}>Cadastrar</Link>
       </div>
     </header>
   );

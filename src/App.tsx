@@ -7,7 +7,6 @@ import { HomeHeader } from './components/HomeHeader';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
-import { Register } from './pages/Register';
 import { UsersManagement } from './pages/UsersManagement';
 import { Settings } from './pages/Settings';
 import { TakeQuestionnaire } from './pages/TakeQuestionnaire';
@@ -75,7 +74,6 @@ function AppRoutes() {
               }
             />
             <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
             <Route path='/admin/users' element={<UsersManagement />} />
             <Route path='/settings' element={<Settings />} />
             <Route path='/questionnaire/:id' element={<TakeQuestionnaire />} />
