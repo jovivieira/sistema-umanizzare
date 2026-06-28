@@ -118,3 +118,87 @@
 .retryBtn { background: none; border: none; color: #800020; text-decoration: underline; cursor: pointer; font-family: 'Chillax', sans-serif; }
 .emptyState { text-align: center; padding: 48px 20px; color: #aaa; }
 .emptyIcon { font-size: 3rem; margin-bottom: 14px; display: block; }
+
+/* ── NOVA CONSULTA ── */
+.novaConsultaCard {
+  background: #fff; border-radius: 16px; border: 1px solid #ece8e4;
+  padding: 28px; display: flex; flex-direction: column; gap: 24px;
+}
+
+.novaConsultaSection { display: flex; flex-direction: column; gap: 12px; }
+
+.novaConsultaSectionTitle {
+  font-size: 1rem; font-weight: 700; color: #1a1a1a; margin: 0;
+  padding-bottom: 10px; border-bottom: 1px solid #f0ebe5;
+}
+
+.profissionalBox {
+  display: flex; align-items: center; gap: 14px;
+  background: #faf7f4; border-radius: 12px; padding: 14px 16px;
+  border: 1px solid #ece8e4;
+}
+
+.profissionalAvatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #800020, #b0003a);
+  color: #fff; font-weight: 700; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.profissionalNome { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; margin: 0; }
+.profissionalLabel { font-size: 0.78rem; color: #888; margin: 2px 0 0; }
+
+.pacienteSelecionarList { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+
+.pacienteSelecionarItem {
+  display: flex; align-items: center; gap: 12px;
+  background: #faf7f4; border: 1px solid #ece8e4; border-radius: 10px;
+  padding: 12px 14px; cursor: pointer; text-align: left; width: 100%;
+  font-family: 'Chillax', sans-serif; transition: all 0.15s;
+}
+
+.pacienteSelecionarItem:hover { border-color: #800020; background: #fdecea; }
+.pacienteSelecionarItemAtivo { border-color: #800020 !important; background: #fdecea !important; }
+
+.novaConsultaGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.resumoConsulta {
+  background: #faf7f4; border-radius: 12px; border: 1px solid #ece8e4;
+  padding: 18px 20px;
+}
+
+.resumoConsultaTitulo { font-size: 0.85rem; font-weight: 700; color: #800020; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 14px; }
+
+.resumoConsultaGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.resumoLabel { display: block; font-size: 0.75rem; color: #888; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+.resumoValor { display: block; font-size: 0.95rem; font-weight: 600; color: #1a1a1a; }
+
+.novaConsultaFooter { display: flex; justify-content: flex-end; padding-top: 8px; }
+
+.btnCriarConsulta {
+  background: #800020; color: #fff; border: none;
+  padding: 13px 32px; border-radius: 10px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  font-family: 'Chillax', sans-serif; transition: background 0.2s;
+  display: inline-flex; align-items: center;
+}
+.btnCriarConsulta:hover { background: #600018; }
+.btnCriarConsulta:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btnNovaConsulta {
+  display: inline-flex; align-items: center;
+  background: #800020; color: #fff; border: none;
+  padding: 10px 22px; border-radius: 10px; margin-top: 16px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  font-family: 'Chillax', sans-serif;
+}
+
+.erroInline { background: #fdecea; color: #c0392b; border-radius: 8px; padding: 12px 16px; font-size: 0.9rem; }
+.sucessoInline { background: #e8f5e9; color: #2e7d32; border-radius: 8px; padding: 12px 16px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; }
+
+/* FORM */
+.formField { display: flex; flex-direction: column; gap: 6px; }
+.formLabel { font-size: 0.78rem; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.4px; }
+.formInput { padding: 10px 14px; border: 1px solid #e0d8d0; border-radius: 8px; font-size: 0.92rem; font-family: 'Chillax', sans-serif; outline: none; }
+.formInput:focus { border-color: #800020; box-shadow: 0 0 0 3px rgba(128,0,32,0.08); }

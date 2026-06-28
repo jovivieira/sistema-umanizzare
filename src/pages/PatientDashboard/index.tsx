@@ -72,6 +72,7 @@ export function PatientDashboard() {
   const [inscrevendoId,  setInscrevendoId]  = useState<number | null>(null);
   const [respostasForm,  setRespostasForm]  = useState<Record<number, number[]>>({});
   const [enviado,        setEnviado]        = useState(false);
+  const [confirmadas,    setConfirmadas]    = useState<Set<number>>(new Set());
 
   useEffect(() => { carregarConsultas(); carregarTarefas(); carregarWorkshops(); }, []);
 
@@ -247,13 +248,26 @@ export function PatientDashboard() {
             {erroConsultas && <Erro msg={erroConsultas} onRetry={carregarConsultas} />}
             {!loadingConsultas && !erroConsultas && consultas.length === 0 && <div className={styles.emptyState}><FontAwesomeIcon icon={faCalendarXmark} className={styles.emptyIcon} /><p>Nenhum atendimento encontrado.</p></div>}
             <div className={styles.atendList}>
-              {consultas.map(c => (
-                <div key={c.id} className={styles.atendItem}>
-                  <div className={styles.atendDataBox}><span className={styles.atendDia}>{formatarData(c.data).split("/")[0]}</span><span className={styles.atendMes}>{MESES[new Date(c.data).getMonth()]}</span></div>
-                  <div className={styles.atendInfo}><p className={styles.atendTitulo}>Sessão de Psicologia</p><p className={styles.atendProf}><FontAwesomeIcon icon={faUserTie} style={{ marginRight: 4, color: "#800020" }} />{c.psicologo ? (c.psicologo.name || c.psicologo.nome || c.psicologo.email || "Profissional") : "Profissional"}{" · "}{c.horario}</p></div>
-                  <StatusBadge status={c.status} />
-                </div>
-              ))}
+              {consultas.map(c => {
+                const jaConfirmada = confirmadas.has(c.id) || c.status === "confirmada" || c.status === "realizada";
+                return (
+                  <div key={c.id} className={styles.atendItem}>
+                    <div className={styles.atendDataBox}><span className={styles.atendDia}>{formatarData(c.data).split("/")[0]}</span><span className={styles.atendMes}>{MESES[new Date(c.data).getMonth()]}</span></div>
+                    <div className={styles.atendInfo}><p className={styles.atendTitulo}>Sessão de Psicologia</p><p className={styles.atendProf}><FontAwesomeIcon icon={faUserTie} style={{ marginRight: 4, color: "#800020" }} />{c.psicologo ? (c.psicologo.name || c.psicologo.nome || c.psicologo.email || "Profissional") : "Profissional"}{" · "}{c.horario}</p></div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                      <StatusBadge status={confirmadas.has(c.id) ? "confirmada" : c.status} />
+                      {!jaConfirmada && c.status !== "cancelada" && (
+                        <button
+                          className={styles.btnConfirmar}
+                          onClick={() => setConfirmadas(prev => new Set([...prev, c.id]))}
+                        >
+                          Confirmar presença
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

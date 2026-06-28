@@ -917,3 +917,58 @@
 
 .main { flex: 1; margin-left: 300px; }
 .content { padding: 32px; min-height: 100vh; background: #faf7f4; }
+
+/* ── ESTILOS PARA MODAIS DE CONSULTA E TAREFA (UsersManagement) ── */
+.erroInline {
+  background: #fdecea; color: #c0392b; border-radius: 8px;
+  padding: 10px 14px; font-size: 0.88rem; margin-bottom: 16px;
+}
+
+/* ── MODAL GRANDE (DOCUMENTOS) ── */
+.modalLarge {
+  background: white; border-radius: 18px; width: 100%; max-width: 640px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; max-height: 85vh;
+  display: flex; flex-direction: column;
+}
+
+.modalLarge .modalBody { overflow-y: auto; flex: 1; }
+
+/* BOTÃO UPLOAD */
+.btnUpload {
+  display: inline-flex; align-items: center;
+  background: #800020; color: #fff; border: none;
+  padding: 8px 16px; border-radius: 8px; font-size: 0.88rem;
+  font-weight: 600; cursor: pointer; font-family: 'Chillax', sans-serif;
+}
+.btnUpload:hover { background: #600018; }
+.btnUpload:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* LISTA DOCS */
+.docList { display: flex; flex-direction: column; gap: 12px; }
+
+.docItem {
+  display: flex; align-items: center; gap: 14px;
+  background: #faf7f4; border-radius: 12px;
+  border: 1px solid #ece8e4; padding: 14px 16px;
+}
+
+.docIconBox {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: #fdecea; color: #800020; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.docInfo { flex: 1; }
+.docNome { font-size: 0.92rem; font-weight: 600; color: #1a1a1a; margin: 0 0 2px; }
+.docData { font-size: 0.78rem; color: #aaa; margin: 0; }
+
+.docAcoes { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+
+.btnDownload {
+  display: inline-flex; align-items: center;
+  background: #800020; color: #fff; border: none;
+  padding: 7px 14px; border-radius: 8px; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; text-decoration: none;
+  font-family: 'Chillax', sans-serif; white-space: nowrap;
+}
+.btnDownload:hover { background: #600018; color: #fff; }

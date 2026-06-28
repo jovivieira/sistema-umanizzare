@@ -7,6 +7,7 @@ import { HomeHeader } from './components/HomeHeader';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { UsersManagement } from './pages/UsersManagement';
 import { Settings } from './pages/Settings';
 import { TakeQuestionnaire } from './pages/TakeQuestionnaire';
@@ -16,6 +17,7 @@ import { PsychologistDashboard } from './pages/PsychologistDashboard';
 import { Patients } from './pages/Patients';
 import { Documents } from './pages/Documents';
 import { Reports } from './pages/Reports';
+import { TasksManagement } from './pages/TasksManagement';
 
 function AppRoutes() {
   const location = useLocation();
@@ -74,6 +76,7 @@ function AppRoutes() {
               }
             />
             <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
             <Route path='/admin/users' element={<UsersManagement />} />
             <Route path='/settings' element={<Settings />} />
             <Route path='/questionnaire/:id' element={<TakeQuestionnaire />} />
@@ -82,6 +85,7 @@ function AppRoutes() {
             <Route path='/patients' element={<Patients />} />
             <Route path='/documents' element={<Documents />} />
             <Route path='/reports' element={<Reports />} />
+            <Route path='/admin/tasks' element={<TasksManagement />} />
             <Route path='*' element={
               <div className="text-center mt-5 py-5">
                 <h2 className="text-muted">Página não encontrada</h2>

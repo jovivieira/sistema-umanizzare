@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUsers, faCalendarCheck, faCalendarPlus, faCalendarXmark,
-  faClipboardList, faCheckCircle, faHeart, faHome, faCalendar,
+  faUsers, faCalendarPlus, faCalendarXmark,
+  faClipboardList, faCheckCircle, faCalendar,
   faChartBar, faCog, faSignOutAlt, faMagnifyingGlass, faPhone,
-  faMapMarkerAlt, faXmark, faSpinner, faTrash, faEye, faFileAlt,
-  faShieldHalved,
+  faMapMarkerAlt, faXmark, faSpinner, faTrash, faEye,
+  faFileAlt, faDownload, faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../../services/api";
@@ -19,6 +19,11 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
 }
 
+function getAuthHeadersMultipart(): Record<string, string> {
+  const token = localStorage.getItem("@Umanizzare:token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 type Paciente = {
   id: string; name?: string; nome?: string; email: string;
   telefone?: string; idade?: number; endereco?: string; role?: string;
@@ -30,7 +35,13 @@ type Paciente = {
 };
 
 type Psicologo = { id: number; nome: string; email: string; crp?: string; };
+type Arquivo = { id: number; nome?: string; filename?: string; url?: string; createdAt?: string; };
 type Aba = "lista" | "tarefas" | "oficinas" | "relatorios";
+
+function formatarData(data: string) {
+  if (!data) return "—";
+  try { return new Date(data).toLocaleDateString("pt-BR"); } catch { return data; }
+}
 
 export function Patients() {
   const navigate = useNavigate();
@@ -62,6 +73,14 @@ export function Patients() {
   const [salvandoTarefa, setSalvandoTarefa] = useState(false);
   const [erroTarefa, setErroTarefa] = useState("");
 
+  // Modal Documentos
+  const [modalDocs, setModalDocs] = useState<Paciente | null>(null);
+  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [erroDocs, setErroDocs] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => { carregarPacientes(); carregarPsicologos(); }, []);
 
   async function carregarPacientes() {
@@ -85,6 +104,62 @@ export function Patients() {
     } catch {}
   }
 
+  async function abrirDocumentos(p: Paciente) {
+    setModalDocs(p);
+    setArquivos([]);
+    setErroDocs("");
+    setLoadingDocs(true);
+    try {
+      const resp = await fetch(`${BASE_URL}/fichas/${p.id}/arquivos`, {
+        headers: getAuthHeaders(),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.message || "Erro ao buscar documentos.");
+      setArquivos(Array.isArray(data) ? data : data.arquivos || data.data || []);
+    } catch (err) {
+      setErroDocs(err instanceof Error ? err.message : "Erro ao carregar documentos.");
+    } finally { setLoadingDocs(false); }
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!modalDocs) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      const resp = await fetch(`${BASE_URL}/fichas/${modalDocs.id}/arquivos`, {
+        method: "POST",
+        headers: getAuthHeadersMultipart(),
+        body: formData,
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.message || "Erro ao enviar arquivo.");
+      await abrirDocumentos(modalDocs);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao enviar arquivo.");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  async function handleDeletarArquivo(arquivoId: number) {
+    if (!modalDocs) return;
+    if (!confirm("Excluir este documento?")) return;
+    try {
+      const resp = await fetch(`${BASE_URL}/fichas/${modalDocs.id}/arquivos/${arquivoId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
+      if (!resp.ok) { const d = await resp.json(); throw new Error(d.message || "Erro ao excluir."); }
+      setArquivos(prev => prev.filter(a => a.id !== arquivoId));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir documento.");
+    }
+  }
+
   async function handleDeletar(id: string) {
     if (!confirm("Tem certeza que deseja excluir esta paciente?")) return;
     try {
@@ -102,33 +177,19 @@ export function Patients() {
     }
     try {
       setSalvandoConsulta(true); setErroConsulta("");
-      // 1. Cria a consulta
       const resp = await fetch(`${BASE_URL}/consultas`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          data: consultaData,
-          horario: consultaHorario,
-          psicologoId: consultaPsicologoId ? Number(consultaPsicologoId) : undefined,
-        }),
+        method: "POST", headers: getAuthHeaders(),
+        body: JSON.stringify({ data: consultaData, horario: consultaHorario, psicologoId: consultaPsicologoId ? Number(consultaPsicologoId) : undefined }),
       });
       const consulta = await resp.json();
       if (!resp.ok) throw new Error(consulta.message || "Erro ao criar consulta.");
-
-      // 2. Adiciona a paciente à consulta
       const resp2 = await fetch(`${BASE_URL}/consultas/${consulta.id}/pacientes`, {
-        method: "POST",
-        headers: getAuthHeaders(),
+        method: "POST", headers: getAuthHeaders(),
         body: JSON.stringify({ pacienteId: Number(modalConsulta.id) }),
       });
-      if (!resp2.ok) {
-        const d = await resp2.json();
-        throw new Error(d.message || "Erro ao vincular paciente.");
-      }
-
-      alert(`Consulta agendada para ${modalConsulta.name || modalConsulta.nome} em ${consultaData} às ${consultaHorario}!`);
-      setModalConsulta(null);
-      setConsultaData(""); setConsultaHorario(""); setConsultaPsicologoId("");
+      if (!resp2.ok) { const d = await resp2.json(); throw new Error(d.message || "Erro ao vincular paciente."); }
+      alert(`Consulta agendada para ${getNome(modalConsulta)} em ${consultaData} às ${consultaHorario}!`);
+      setModalConsulta(null); setConsultaData(""); setConsultaHorario(""); setConsultaPsicologoId("");
     } catch (err) {
       setErroConsulta(err instanceof Error ? err.message : "Erro ao agendar consulta.");
     } finally { setSalvandoConsulta(false); }
@@ -141,16 +202,13 @@ export function Patients() {
     try {
       setSalvandoTarefa(true); setErroTarefa("");
       const resp = await fetch(`${BASE_URL}/tarefas`, {
-        method: "POST",
-        headers: getAuthHeaders(),
+        method: "POST", headers: getAuthHeaders(),
         body: JSON.stringify({ titulo: tarefaTitulo, descricao: tarefaDescricao }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message || "Erro ao criar tarefa.");
-
       alert(`Tarefa "${tarefaTitulo}" criada com sucesso!`);
-      setModalTarefa(null);
-      setTarefaTitulo(""); setTarefaDescricao("");
+      setModalTarefa(null); setTarefaTitulo(""); setTarefaDescricao("");
     } catch (err) {
       setErroTarefa(err instanceof Error ? err.message : "Erro ao criar tarefa.");
     } finally { setSalvandoTarefa(false); }
@@ -268,6 +326,7 @@ export function Patients() {
                           <td>
                             <div className={styles.tableActions}>
                               <button className={styles.actionBtn} title="Ver prontuário" onClick={() => setViewPaciente(p)}><FontAwesomeIcon icon={faEye} /></button>
+                              <button className={styles.actionBtn} title="Documentos" onClick={() => abrirDocumentos(p)}><FontAwesomeIcon icon={faFileAlt} /></button>
                               <button className={styles.actionBtn} title="Agendar consulta" onClick={() => { setModalConsulta(p); setErroConsulta(""); }}><FontAwesomeIcon icon={faCalendarPlus} /></button>
                               <button className={styles.actionBtn} title="Atribuir tarefa" onClick={() => { setModalTarefa(p); setErroTarefa(""); }}><FontAwesomeIcon icon={faClipboardList} /></button>
                               <button className={styles.actionBtn} title="Excluir" style={{ color: "#c0392b" }} onClick={() => handleDeletar(p.id)} disabled={deletandoId === p.id}>
@@ -294,6 +353,7 @@ export function Patients() {
                       </div>
                       <div className={styles.mobileCardActions}>
                         <button className={styles.actionBtn} onClick={() => setViewPaciente(p)}><FontAwesomeIcon icon={faEye} /></button>
+                        <button className={styles.actionBtn} onClick={() => abrirDocumentos(p)}><FontAwesomeIcon icon={faFileAlt} /></button>
                         <button className={styles.actionBtn} onClick={() => { setModalConsulta(p); setErroConsulta(""); }}><FontAwesomeIcon icon={faCalendarPlus} /></button>
                         <button className={styles.actionBtn} onClick={() => { setModalTarefa(p); setErroTarefa(""); }}><FontAwesomeIcon icon={faClipboardList} /></button>
                         <button className={styles.actionBtn} style={{ color: "#c0392b" }} onClick={() => handleDeletar(p.id)}><FontAwesomeIcon icon={faTrash} /></button>
@@ -315,7 +375,6 @@ export function Patients() {
               <div className={styles.emptyState}><FontAwesomeIcon icon={faCalendarXmark} className={styles.emptyIcon} /><p>Em breve disponível.</p></div>
             </div>
           )}
-
         </main>
       </div>
 
@@ -359,6 +418,56 @@ export function Patients() {
         </div>
       )}
 
+      {/* MODAL DOCUMENTOS */}
+      {modalDocs && (
+        <div className={styles.modalOverlay} onClick={() => setModalDocs(null)}>
+          <div className={styles.modalLarge} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3><FontAwesomeIcon icon={faFileAlt} style={{ marginRight: 8, color: "#800020" }} />Documentos — {getNome(modalDocs)}</h3>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button className={styles.btnUpload} onClick={() => inputRef.current?.click()} disabled={uploading}>
+                  {uploading ? <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: 6 }} /> : <FontAwesomeIcon icon={faUpload} style={{ marginRight: 6 }} />}
+                  {uploading ? "Enviando..." : "Enviar documento"}
+                </button>
+                <button onClick={() => setModalDocs(null)} className={styles.modalClose}><FontAwesomeIcon icon={faXmark} /></button>
+              </div>
+            </div>
+            <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style={{ display: "none" }} onChange={handleUpload} />
+            <div className={styles.modalBody}>
+              {loadingDocs && <div className={styles.loadingBlock}><FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: 8 }} />Carregando documentos...</div>}
+              {erroDocs && <div className={styles.erroBlock}>{erroDocs}</div>}
+              {!loadingDocs && !erroDocs && arquivos.length === 0 && (
+                <div className={styles.emptyState}>
+                  <FontAwesomeIcon icon={faFileAlt} className={styles.emptyIcon} />
+                  <p>Nenhum documento cadastrado.</p>
+                </div>
+              )}
+              <div className={styles.docList}>
+                {arquivos.map(a => (
+                  <div key={a.id} className={styles.docItem}>
+                    <div className={styles.docIconBox}><FontAwesomeIcon icon={faFileAlt} /></div>
+                    <div className={styles.docInfo}>
+                      <p className={styles.docNome}>{a.nome || a.filename || `Documento ${a.id}`}</p>
+                      {a.createdAt && <p className={styles.docData}>Adicionado em {formatarData(a.createdAt)}</p>}
+                    </div>
+                    <div className={styles.docAcoes}>
+                      {a.url && (
+                        <a href={a.url} download className={styles.btnDownload} title="Baixar">
+                          <FontAwesomeIcon icon={faDownload} style={{ marginRight: 6 }} />Baixar
+                        </a>
+                      )}
+                      <button className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Excluir" onClick={() => handleDeletarArquivo(a.id)}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL AGENDAR CONSULTA */}
       {modalConsulta && (
         <div className={styles.modalOverlay} onClick={() => setModalConsulta(null)}>
@@ -370,27 +479,16 @@ export function Patients() {
             <div className={styles.modalBody}>
               <div className={styles.modalAvatar}>{getIniciais(modalConsulta)}</div>
               <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 20, color: "#1a1a1a" }}>{getNome(modalConsulta)}</p>
-
               {erroConsulta && <div className={styles.erroBlock} style={{ marginBottom: 16 }}>{erroConsulta}</div>}
-
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>Data *</label>
-                <input type="date" value={consultaData} onChange={e => setConsultaData(e.target.value)} className={styles.formInput} min={new Date().toISOString().split("T")[0]} />
-              </div>
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>Horário *</label>
-                <input type="time" value={consultaHorario} onChange={e => setConsultaHorario(e.target.value)} className={styles.formInput} />
-              </div>
+              <div className={styles.formField}><label className={styles.formLabel}>Data *</label><input type="date" value={consultaData} onChange={e => setConsultaData(e.target.value)} className={styles.formInput} min={new Date().toISOString().split("T")[0]} /></div>
+              <div className={styles.formField}><label className={styles.formLabel}>Horário *</label><input type="time" value={consultaHorario} onChange={e => setConsultaHorario(e.target.value)} className={styles.formInput} /></div>
               <div className={styles.formField}>
                 <label className={styles.formLabel}>Psicóloga responsável</label>
                 <select value={consultaPsicologoId} onChange={e => setConsultaPsicologoId(e.target.value)} className={styles.formInput}>
                   <option value="">Selecione (opcional)</option>
-                  {psicologos.map(ps => (
-                    <option key={ps.id} value={ps.id}>{ps.nome} {ps.crp ? `— CRP ${ps.crp}` : ""}</option>
-                  ))}
+                  {psicologos.map(ps => <option key={ps.id} value={ps.id}>{ps.nome}{ps.crp ? ` — CRP ${ps.crp}` : ""}</option>)}
                 </select>
               </div>
-
               <div className={styles.modalFooter}>
                 <button onClick={() => setModalConsulta(null)} className={styles.btnCancel}>Cancelar</button>
                 <button onClick={handleAgendarConsulta} disabled={salvandoConsulta} className={styles.btnSave}>
@@ -413,18 +511,9 @@ export function Patients() {
             <div className={styles.modalBody}>
               <div className={styles.modalAvatar}>{getIniciais(modalTarefa)}</div>
               <p style={{ textAlign: "center", fontWeight: 600, marginBottom: 20, color: "#1a1a1a" }}>{getNome(modalTarefa)}</p>
-
               {erroTarefa && <div className={styles.erroBlock} style={{ marginBottom: 16 }}>{erroTarefa}</div>}
-
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>Título da tarefa *</label>
-                <input type="text" placeholder="Ex: Diário de emoções" value={tarefaTitulo} onChange={e => setTarefaTitulo(e.target.value)} className={styles.formInput} />
-              </div>
-              <div className={styles.formField}>
-                <label className={styles.formLabel}>Descrição</label>
-                <textarea rows={4} placeholder="Descreva a tarefa para a paciente..." value={tarefaDescricao} onChange={e => setTarefaDescricao(e.target.value)} className={styles.formInput} style={{ resize: "vertical" }} />
-              </div>
-
+              <div className={styles.formField}><label className={styles.formLabel}>Título da tarefa *</label><input type="text" placeholder="Ex: Diário de emoções" value={tarefaTitulo} onChange={e => setTarefaTitulo(e.target.value)} className={styles.formInput} /></div>
+              <div className={styles.formField}><label className={styles.formLabel}>Descrição</label><textarea rows={4} placeholder="Descreva a tarefa..." value={tarefaDescricao} onChange={e => setTarefaDescricao(e.target.value)} className={styles.formInput} style={{ resize: "vertical" }} /></div>
               <div className={styles.modalFooter}>
                 <button onClick={() => setModalTarefa(null)} className={styles.btnCancel}>Cancelar</button>
                 <button onClick={handleAtribuirTarefa} disabled={salvandoTarefa} className={styles.btnSave}>

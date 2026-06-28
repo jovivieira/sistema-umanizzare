@@ -959,3 +959,13 @@
 .avaliacaoSucesso h3 { font-size: 1.25rem; font-weight: 700; color: #2e7d32; margin: 0 0 10px; }
 
 .avaliacaoSucesso p { font-size: 0.95rem; color: #555; margin: 0; line-height: 1.6; }
+
+/* ── BOTÃO CONFIRMAR CONSULTA ── */
+.btnConfirmar {
+  background: #e8f5e9; color: #2e7d32;
+  border: 1px solid #c8e6c9; padding: 6px 14px;
+  border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; font-family: 'Chillax', sans-serif;
+  white-space: nowrap; transition: all 0.2s;
+}
+.btnConfirmar:hover { background: #2e7d32; color: #fff; border-color: #2e7d32; }
